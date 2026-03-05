@@ -2,7 +2,6 @@ import React, { useEffect } from "react";
 import { View, Text, ActivityIndicator, StyleSheet } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation/types";
-import { getSession } from "../storage/auth";
 import { supabase } from "../services/supabase";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Splash">;

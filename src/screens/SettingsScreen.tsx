@@ -3,7 +3,6 @@ import { View, Text, StyleSheet, Pressable } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation/types";
 import { loadSettings, saveSettings } from "../storage/settings";
-import { clearSession } from "../storage/auth";
 import { supabase } from "../services/supabase";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Settings">;
