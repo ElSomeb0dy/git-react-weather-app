@@ -3,6 +3,7 @@ import { View, Text, ActivityIndicator, StyleSheet } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation/types";
 import { getSession } from "../storage/auth";
+import { supabase } from "../services/supabase";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Splash">;
 
@@ -11,10 +12,22 @@ export default function SplashScreen({ navigation }: Props) {
     // If yes -> go to Home
     // If no  -> go to Login
     useEffect(() => {
+        let mounted = true;
+
         (async () => {
-            const session = await getSession();
-            navigation.replace(session ? "Home" : "Login");
+            const { data } = await supabase.auth.getSession();
+            if (!mounted) return;
+            navigation.replace(data.session ? "Home" : "Login");
         })();
+
+        const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+            navigation.replace(session ? "Home" : "Login");
+        });
+
+        return () => {
+            mounted = false;
+            sub.subscription.unsubscribe();
+        };
     }, [navigation]);
 
     // Simple loading splash

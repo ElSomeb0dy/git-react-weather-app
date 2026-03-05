@@ -2,29 +2,73 @@ import React, { useState } from "react";
 import { View, Text, TextInput, Pressable, StyleSheet, Alert } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation/types";
-import { setSession } from "../storage/auth";
+import { supabase } from "../services/supabase";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Login">;
 
 export default function LoginScreen({ navigation }: Props) {
-    // Controlled inputs for email/password
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
-    // MVP auth:
-    // - we don't check a real database
-    // - we do simple validation and then store a "session"
-    const onLogin = async () => {
-        if (!email.includes("@") || password.length < 4) {
-            Alert.alert("Invalid login", "Use a real email + password length >= 4");
-            return;
+    // Prevents spamming login/signup -> avoids 429 rate-limit
+    const [submitting, setSubmitting] = useState(false);
+
+    const validate = () => {
+        if (!email.includes("@")) {
+            Alert.alert("Invalid email", "Please enter a valid email address.");
+            return false;
         }
+        // Supabase default requires 6+ chars
+        if (password.length < 6) {
+            Alert.alert("Invalid password", "Password must be at least 6 characters.");
+            return false;
+        }
+        return true;
+    };
 
-        // Save session (persist login across restarts)
-        await setSession(email);
+    const onLogin = async () => {
+        if (submitting) return;
+        if (!validate()) return;
 
-        // Replace stack so user can't go "back" to login with Android back button
-        navigation.replace("Home");
+        setSubmitting(true);
+        try {
+            const { error } = await supabase.auth.signInWithPassword({ email, password });
+
+            if (error) {
+                console.log("LOGIN ERROR:", error);
+                Alert.alert("Login failed", error.message);
+                return;
+            }
+
+            // If login succeeds, go to Home
+            navigation.replace("Home");
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    const onSignup = async () => {
+        if (submitting) return;
+        if (!validate()) return;
+
+        setSubmitting(true);
+        try {
+            const { error } = await supabase.auth.signUp({ email, password });
+
+            if (error) {
+                console.log("SIGNUP ERROR:", error);
+                Alert.alert("Sign up failed", error.message);
+                return;
+            }
+
+            // Depending on Supabase settings, user may need email confirmation
+            Alert.alert(
+                "Account created",
+                "If email confirmations are enabled, check your inbox. Then log in."
+            );
+        } finally {
+            setSubmitting(false);
+        }
     };
 
     return (
@@ -38,21 +82,37 @@ export default function LoginScreen({ navigation }: Props) {
                 keyboardType="email-address"
                 value={email}
                 onChangeText={setEmail}
+                editable={!submitting}
             />
 
             <TextInput
                 style={styles.input}
-                placeholder="Password"
+                placeholder="Password (min 6 chars)"
                 secureTextEntry
                 value={password}
                 onChangeText={setPassword}
+                editable={!submitting}
             />
 
-            <Pressable style={styles.button} onPress={onLogin}>
-                <Text style={styles.buttonText}>Login</Text>
+            <Pressable
+                disabled={submitting}
+                style={[styles.button, submitting && styles.buttonDisabled]}
+                onPress={onLogin}
+            >
+                <Text style={styles.buttonText}>{submitting ? "Working..." : "Login"}</Text>
             </Pressable>
 
-            <Text style={styles.note}>(MVP auth: any valid-looking email + password works)</Text>
+            <Pressable
+                disabled={submitting}
+                style={[styles.buttonSecondary, submitting && styles.buttonDisabled]}
+                onPress={onSignup}
+            >
+                <Text style={styles.buttonText}>{submitting ? "Working..." : "Sign up"}</Text>
+            </Pressable>
+
+            <Text style={styles.note}>
+                Tip: If sign up says “check your inbox”, you may need to confirm your email before logging in.
+            </Text>
         </View>
     );
 }
@@ -66,8 +126,22 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         paddingHorizontal: 12,
         paddingVertical: 10,
+        backgroundColor: "white",
     },
-    button: { backgroundColor: "#111827", padding: 14, borderRadius: 12, marginTop: 8 },
+    button: {
+        backgroundColor: "#111827",
+        padding: 14,
+        borderRadius: 12,
+        marginTop: 8,
+    },
+    buttonSecondary: {
+        backgroundColor: "#374151",
+        padding: 14,
+        borderRadius: 12,
+    },
+    buttonDisabled: {
+        opacity: 0.6,
+    },
     buttonText: { color: "white", textAlign: "center", fontWeight: "700" },
-    note: { color: "#6B7280", marginTop: 10 },
+    note: { color: "#6B7280", marginTop: 10, textAlign: "center" },
 });

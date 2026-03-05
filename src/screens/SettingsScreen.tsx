@@ -4,6 +4,7 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation/types";
 import { loadSettings, saveSettings } from "../storage/settings";
 import { clearSession } from "../storage/auth";
+import { supabase } from "../services/supabase";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Settings">;
 
@@ -28,10 +29,9 @@ export default function SettingsScreen({ navigation }: Props) {
 
     // Log out by clearing session and going back to Login
     const logout = async () => {
-        await clearSession();
+        await supabase.auth.signOut();
         navigation.replace("Login");
     };
-
     return (
         <View style={styles.container}>
             <Text style={styles.h1}>Preferences</Text>
