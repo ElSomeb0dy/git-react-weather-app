@@ -19,6 +19,17 @@ export async function fetchCurrentWeather(city: string): Promise<CurrentWeather>
 
     const data = await res.json();
 
+    // TEMP DEBUG: see what OpenWeather resolved your query to
+    console.log(
+        "[OpenWeather] requested:",
+        city,
+        "| resolved:",
+        data?.name,
+        data?.sys?.country,
+        "| id:",
+        data?.id
+    );
+
     const c = kelvinToC(data.main.temp);
     const condition = (data.weather?.[0]?.main ?? "Clouds") as WeatherCondition;
 
