@@ -10,19 +10,36 @@ import { loadSettings } from "../storage/settings";
 type Props = NativeStackScreenProps<RootStackParamList, "WeatherDetail">;
 
 export default function WeatherDetailScreen({ route, navigation }: Props) {
-    // city name passed from Home screen
+    // City name passed from Home screen via navigation params
     const { city } = route.params;
 
     // Current weather data for this city
     const [weather, setWeather] = useState<CurrentWeather | null>(null);
 
-    // Temperature unit preference (C or F)
+    // Temperature unit preference (C or F), loaded from Settings
     const [unit, setUnit] = useState<"C" | "F">("C");
 
-    // Loading state for fetch
+    // Loading state for the weather request
     const [loading, setLoading] = useState(true);
 
-    // Load settings (unit) on mount
+    /**
+     * Loads weather for the current city.
+     * Used both when the screen loads and when the user taps "Retry".
+     */
+    const loadWeather = async () => {
+        setLoading(true);
+        try {
+            const w = await fetchCurrentWeather(city);
+            setWeather(w);
+        } catch {
+            // If the request fails (network, API error, etc.), show the failure UI
+            setWeather(null);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Load user settings (unit) once when the screen mounts
     useEffect(() => {
         (async () => {
             const s = await loadSettings();
@@ -30,24 +47,17 @@ export default function WeatherDetailScreen({ route, navigation }: Props) {
         })();
     }, []);
 
-    // Fetch weather whenever `city` changes
+    // Fetch weather whenever the city changes (including first mount)
     useEffect(() => {
-        (async () => {
-            setLoading(true);
-            try {
-                const w = await fetchCurrentWeather(city);
-                setWeather(w);
-            } finally {
-                setLoading(false);
-            }
-        })();
+        loadWeather();
     }, [city]);
 
-    // Pick colors based on the weather condition
+    // Decide colors for the screen based on the weather condition
     const theme = useMemo(() => {
         return themeForCondition(weather?.condition ?? "Clouds");
     }, [weather]);
 
+    // Loading UI while fetching
     if (loading) {
         return (
             <View style={[styles.center, { backgroundColor: "#fff" }]}>
@@ -56,10 +66,16 @@ export default function WeatherDetailScreen({ route, navigation }: Props) {
         );
     }
 
+    // Failure UI when the weather request fails
+    // The Retry button calls loadWeather() again to re-attempt the request.
     if (!weather) {
         return (
             <View style={[styles.center, { padding: 16 }]}>
                 <Text>Failed to load weather.</Text>
+
+                <Pressable style={styles.retryBtn} onPress={loadWeather}>
+                    <Text style={styles.retryText}>Retry</Text>
+                </Pressable>
             </View>
         );
     }
@@ -113,4 +129,8 @@ const styles = StyleSheet.create({
     row: { flexDirection: "row", alignItems: "center", gap: 10, marginTop: 10 },
     temp: { fontSize: 38, fontWeight: "900" },
     settingsBtn: { marginTop: 14, padding: 12, borderRadius: 12 },
+
+    // Styles for the Retry button shown in the failure state
+    retryBtn: { marginTop: 12, backgroundColor: "#111827", padding: 12, borderRadius: 12 },
+    retryText: { color: "white", fontWeight: "800" },
 });

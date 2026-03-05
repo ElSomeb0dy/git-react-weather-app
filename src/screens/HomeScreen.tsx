@@ -30,6 +30,12 @@ export default function HomeScreen({ navigation }: Props) {
     const [loading, setLoading] = useState(true);
     const [weatherMap, setWeatherMap] = useState<Record<string, CurrentWeather>>({});
 
+    // On-screen feedback (success/error)
+    const [status, setStatus] = useState<{ type: "error" | "success"; text: string } | null>(null);
+    const showError = (text: string) => setStatus({ type: "error", text });
+    const showSuccess = (text: string) => setStatus({ type: "success", text });
+    const clearStatus = () => setStatus(null);
+
     // Pick first city's weather as the global screen theme
     const activeTheme = useMemo(() => {
         const first = cities[0] && weatherMap[cities[0]];
@@ -49,7 +55,9 @@ export default function HomeScreen({ navigation }: Props) {
 
             if (error) {
                 console.warn(error);
+                // Keep the alert if you want, but also show on-screen status
                 Alert.alert("Database error", "Couldn't load your saved cities.");
+                showError("Couldn't load your saved cities.");
                 setCities([]);
                 setLoading(false);
                 return;
@@ -83,53 +91,51 @@ export default function HomeScreen({ navigation }: Props) {
         if (!trimmed) return;
 
         if (cities.some((c) => c.toLowerCase() === trimmed.toLowerCase())) {
-            Alert.alert("Already added", "That city is already in your list.");
+            showError("That city is already in your list.");
             return;
         }
 
-        // Validate the city by calling OpenWeather once
+        // Validate city exists via OpenWeather
         try {
             await fetchCurrentWeather(trimmed);
         } catch {
-            Alert.alert("City not found", "OpenWeatherMap couldn't find that city.");
+            showError("City not found. Check spelling and try again.");
             return;
         }
 
-        // Insert into Supabase (RLS ensures it saves for the logged-in user)
         const { error } = await supabase.from("user_cities").insert({ city: trimmed });
 
         if (error) {
             console.warn(error);
 
-            // Nice message for the common "duplicate city" case
+            // Postgres unique violation (duplicate)
             if (error.code === "23505") {
-                Alert.alert("Already added", "That city is already in your list.");
+                showError("That city is already in your list.");
                 return;
             }
 
-            Alert.alert("Database error", "Couldn't save that city.");
+            showError("Couldn't save city. Please try again.");
             return;
         }
 
-        // Update local UI immediately
-        const updated = [trimmed, ...cities];
-        setCities(updated);
+        setCities([trimmed, ...cities]);
         setNewCity("");
+        showSuccess(`Added ${trimmed}.`);
     };
 
     const removeCity = async (city: string) => {
-        // Delete from Supabase (RLS ensures it only affects this user's rows)
         const { error } = await supabase.from("user_cities").delete().eq("city", city);
 
         if (error) {
             console.warn(error);
             Alert.alert("Database error", "Couldn't remove that city.");
+            showError("Couldn't remove that city.");
             return;
         }
 
-        // Update local UI immediately
         const updated = cities.filter((c) => c !== city);
         setCities(updated);
+        showSuccess(`Removed ${city}.`);
     };
 
     if (loading) {
@@ -142,18 +148,30 @@ export default function HomeScreen({ navigation }: Props) {
 
     return (
         <View style={[styles.container, { backgroundColor: activeTheme.background }]}>
+            {/* Add city input + button */}
             <View style={styles.row}>
                 <TextInput
                     style={[styles.input, { backgroundColor: activeTheme.card }]}
                     placeholder="Add a city (e.g., London)"
                     value={newCity}
-                    onChangeText={setNewCity}
+                    onChangeText={(t) => {
+                        setNewCity(t);
+                        clearStatus();
+                    }}
                 />
                 <Pressable style={[styles.addBtn, { backgroundColor: activeTheme.accent }]} onPress={addCity}>
                     <Text style={styles.addBtnText}>Add</Text>
                 </Pressable>
             </View>
 
+            {/* Status banner */}
+            {status && (
+                <Text style={[styles.status, status.type === "error" ? styles.statusError : styles.statusSuccess]}>
+                    {status.text}
+                </Text>
+            )}
+
+            {/* Header row */}
             <View style={styles.rowBetween}>
                 <Text style={[styles.h2, { color: activeTheme.text }]}>Locations</Text>
                 <Pressable onPress={() => navigation.navigate("Settings")}>
@@ -193,4 +211,9 @@ const styles = StyleSheet.create({
     addBtnText: { color: "white", fontWeight: "800" },
     h2: { fontSize: 20, fontWeight: "800" },
     link: { fontWeight: "800" },
+
+    // Status banner styles
+    status: { marginTop: 10, textAlign: "center", fontWeight: "800" },
+    statusError: { color: "#DC2626" },
+    statusSuccess: { color: "#16A34A" },
 });
