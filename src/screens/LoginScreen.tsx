@@ -6,6 +6,12 @@ import { supabase } from "../services/supabase";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Login">;
 
+const Chip = ({ label, bg, text }: { label: string; bg: string; text: string }) => (
+    <View style={[styles.chip, { backgroundColor: bg }]}>
+        <Text style={[styles.chipText, { color: text }]}>{label}</Text>
+    </View>
+);
+
 export default function LoginScreen({ navigation }: Props) {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -26,7 +32,7 @@ export default function LoginScreen({ navigation }: Props) {
 
     const validate = () => {
         setMessage("");
-        if (!email.trim().includes("@")) return showError("Enter a valid email."), false;
+        if (!email.trim().includes("@")) return showError("Please enter a valid email."), false;
         if (password.length < 6) return showError("Password must be at least 6 characters."), false;
         return true;
     };
@@ -89,6 +95,11 @@ export default function LoginScreen({ navigation }: Props) {
                 <Text style={styles.logo}>☀️</Text>
                 <Text style={styles.title}>React Weather</Text>
                 <Text style={styles.subtitle}>Log in to sync your saved cities</Text>
+                <View style={styles.chipRow}>
+                    <Chip label="Clear" bg="#FFB703" text="#0B1220" />
+                    <Chip label="Rain" bg="#0EA5E9" text="#06111D" />
+                    <Chip label="Snow" bg="#E0F2FE" text="#0B1220" />
+                </View>
             </View>
 
             {/* Card */}
@@ -160,6 +171,13 @@ export default function LoginScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
+    chipRow: { flexDirection: "row", gap: 8, marginTop: 10 },
+    chip: {
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 999,
+    },
+    chipText: { fontWeight: "900", fontSize: 12 },
     screen: { flex: 1, padding: 16, justifyContent: "center", gap: 16, backgroundColor: "#E5E7EB" },
     header: { alignItems: "center", marginBottom: 6 },
     logo: { fontSize: 42, marginBottom: 6 },
