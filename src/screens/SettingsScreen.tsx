@@ -8,8 +8,10 @@ import { clearSession } from "../storage/auth";
 type Props = NativeStackScreenProps<RootStackParamList, "Settings">;
 
 export default function SettingsScreen({ navigation }: Props) {
+    // User preference for temperature unit
     const [unit, setUnit] = useState<"C" | "F">("C");
 
+    // Load settings on mount
     useEffect(() => {
         (async () => {
             const s = await loadSettings();
@@ -17,12 +19,14 @@ export default function SettingsScreen({ navigation }: Props) {
         })();
     }, []);
 
+    // Toggle C/F and persist to storage
     const toggleUnit = async () => {
         const next = unit === "C" ? "F" : "C";
         setUnit(next);
         await saveSettings({ unit: next });
     };
 
+    // Log out by clearing session and going back to Login
     const logout = async () => {
         await clearSession();
         navigation.replace("Login");
@@ -35,7 +39,9 @@ export default function SettingsScreen({ navigation }: Props) {
             <View style={styles.card}>
                 <Text style={styles.label}>Temperature unit</Text>
                 <Pressable style={styles.toggle} onPress={toggleUnit}>
-                    <Text style={styles.toggleText}>{unit === "C" ? "Celsius (°C)" : "Fahrenheit (°F)"}</Text>
+                    <Text style={styles.toggleText}>
+                        {unit === "C" ? "Celsius (°C)" : "Fahrenheit (°F)"}
+                    </Text>
                 </Pressable>
             </View>
 

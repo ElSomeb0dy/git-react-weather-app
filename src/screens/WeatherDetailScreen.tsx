@@ -10,12 +10,19 @@ import { loadSettings } from "../storage/settings";
 type Props = NativeStackScreenProps<RootStackParamList, "WeatherDetail">;
 
 export default function WeatherDetailScreen({ route, navigation }: Props) {
+    // city name passed from Home screen
     const { city } = route.params;
 
+    // Current weather data for this city
     const [weather, setWeather] = useState<CurrentWeather | null>(null);
+
+    // Temperature unit preference (C or F)
     const [unit, setUnit] = useState<"C" | "F">("C");
+
+    // Loading state for fetch
     const [loading, setLoading] = useState(true);
 
+    // Load settings (unit) on mount
     useEffect(() => {
         (async () => {
             const s = await loadSettings();
@@ -23,6 +30,7 @@ export default function WeatherDetailScreen({ route, navigation }: Props) {
         })();
     }, []);
 
+    // Fetch weather whenever `city` changes
     useEffect(() => {
         (async () => {
             setLoading(true);
@@ -35,6 +43,7 @@ export default function WeatherDetailScreen({ route, navigation }: Props) {
         })();
     }, [city]);
 
+    // Pick colors based on the weather condition
     const theme = useMemo(() => {
         return themeForCondition(weather?.condition ?? "Clouds");
     }, [weather]);
@@ -55,7 +64,10 @@ export default function WeatherDetailScreen({ route, navigation }: Props) {
         );
     }
 
+    // Display temperature in user's chosen unit
     const temp = unit === "C" ? `${weather.tempC}°C` : `${weather.tempF}°F`;
+
+    // OpenWeather icon URL
     const iconUrl = `https://openweathermap.org/img/wn/${weather.icon}@2x.png`;
 
     return (
@@ -84,7 +96,9 @@ export default function WeatherDetailScreen({ route, navigation }: Props) {
                     style={[styles.settingsBtn, { backgroundColor: theme.accent }]}
                     onPress={() => navigation.navigate("Settings")}
                 >
-                    <Text style={{ color: "white", fontWeight: "800", textAlign: "center" }}>Settings</Text>
+                    <Text style={{ color: "white", fontWeight: "800", textAlign: "center" }}>
+                        Settings
+                    </Text>
                 </Pressable>
             </View>
         </View>

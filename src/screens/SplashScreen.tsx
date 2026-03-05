@@ -7,6 +7,9 @@ import { getSession } from "../storage/auth";
 type Props = NativeStackScreenProps<RootStackParamList, "Splash">;
 
 export default function SplashScreen({ navigation }: Props) {
+    // On mount: check if a session exists.
+    // If yes -> go to Home
+    // If no  -> go to Login
     useEffect(() => {
         (async () => {
             const session = await getSession();
@@ -14,6 +17,7 @@ export default function SplashScreen({ navigation }: Props) {
         })();
     }, [navigation]);
 
+    // Simple loading splash
     return (
         <View style={styles.container}>
             <Text style={styles.title}>React Weather</Text>
