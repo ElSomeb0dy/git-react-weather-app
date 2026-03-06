@@ -1,12 +1,64 @@
+// src/services/openWeather.ts
 import Constants from "expo-constants";
 import { CurrentWeather, WeatherCondition } from "../types/weather";
 
 const API_KEY = Constants.expoConfig?.extra?.OPENWEATHER_API_KEY as string;
 
 const BASE = "https://api.openweathermap.org/data/2.5/weather";
+const GEO = "https://api.openweathermap.org/geo/1.0/direct";
 
 const kelvinToC = (k: number) => k - 273.15;
 const cToF = (c: number) => (c * 9) / 5 + 32;
+
+export type CitySuggestion = {
+    label: string; // e.g. "Paris, Île-de-France, FR"
+    name: string;
+    country: string;
+    state?: string;
+    lat: number;
+    lon: number;
+};
+
+export async function fetchCitySuggestions(query: string, limit = 6): Promise<CitySuggestion[]> {
+    if (!query.trim()) return [];
+
+    const url = `${GEO}?q=${encodeURIComponent(query)}&limit=${limit}&appid=${API_KEY}`;
+    const res = await fetch(url);
+    if (!res.ok) return [];
+
+    const data = await res.json();
+    if (!Array.isArray(data)) return [];
+
+    // Build suggestions
+    const raw: CitySuggestion[] = data.map((x: any) => {
+        const parts = [x.name, x.state, x.country].filter(Boolean);
+        return {
+            label: parts.join(", "),
+            name: x.name,
+            state: x.state,
+            country: x.country,
+            lat: x.lat,
+            lon: x.lon,
+        };
+    });
+
+    // Dedupe: prefer first occurrence of each label, and also avoid repeated lat/lon
+    const seenLabel = new Set<string>();
+    const seenCoord = new Set<string>();
+    const out: CitySuggestion[] = [];
+
+    for (const s of raw) {
+        const coordKey = `${s.lat},${s.lon}`;
+        if (seenCoord.has(coordKey)) continue;
+        if (seenLabel.has(s.label)) continue;
+
+        seenCoord.add(coordKey);
+        seenLabel.add(s.label);
+        out.push(s);
+    }
+
+    return out;
+}
 
 export async function fetchCurrentWeather(city: string): Promise<CurrentWeather> {
     const url = `${BASE}?q=${encodeURIComponent(city)}&appid=${API_KEY}`;
@@ -18,18 +70,6 @@ export async function fetchCurrentWeather(city: string): Promise<CurrentWeather>
     }
 
     const data = await res.json();
-
-    /* TEMP DEBUG: see what OpenWeather resolved your query to
-    console.log(
-        "[OpenWeather] requested:",
-        city,
-        "| resolved:",
-        data?.name,
-        data?.sys?.country,
-        "| id:",
-        data?.id
-    );
-    */
 
     const c = kelvinToC(data.main.temp);
     const condition = (data.weather?.[0]?.main ?? "Clouds") as WeatherCondition;

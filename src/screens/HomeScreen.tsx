@@ -1,9 +1,14 @@
-import React, { useEffect, useMemo, useState, useCallback } from "react";
+// src/screens/HomeScreen.tsx
+import React, { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import ThemeBackground from "../components/ThemeBackground";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useFocusEffect } from "@react-navigation/native";
 import { RootStackParamList } from "../navigation/types";
-import { fetchCurrentWeather } from "../services/openWeather";
+import {
+    fetchCurrentWeather,
+    fetchCitySuggestions,
+    CitySuggestion,
+} from "../services/openWeather";
 import { CurrentWeather } from "../types/weather";
 import { themeForCondition } from "../theme/weatherTheme";
 import CityRow from "../components/CityRow";
@@ -40,6 +45,11 @@ export default function HomeScreen({ navigation }: Props) {
     const showError = (text: string) => setStatus({ type: "error", text });
     const showSuccess = (text: string) => setStatus({ type: "success", text });
     const clearStatus = () => setStatus(null);
+
+    // Autocomplete suggestions
+    const [suggestions, setSuggestions] = useState<CitySuggestion[]>([]);
+    const [showSuggestions, setShowSuggestions] = useState(false);
+    const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     // Pick first city's weather as the global screen theme
     const activeTheme = useMemo(() => {
@@ -112,6 +122,10 @@ export default function HomeScreen({ navigation }: Props) {
         const trimmed = newCity.trim();
         if (!trimmed) return;
 
+        // Hide suggestions once we commit to adding
+        setShowSuggestions(false);
+        setSuggestions([]);
+
         if (cities.some((c) => c.toLowerCase() === trimmed.toLowerCase())) {
             showError("That city is already in your list.");
             return;
@@ -176,12 +190,46 @@ export default function HomeScreen({ navigation }: Props) {
                     onChangeText={(t) => {
                         setNewCity(t);
                         clearStatus();
+
+                        // Debounced suggestions fetch
+                        if (debounceRef.current) clearTimeout(debounceRef.current);
+
+                        const q = t.trim();
+                        if (q.length < 2) {
+                            setSuggestions([]);
+                            setShowSuggestions(false);
+                            return;
+                        }
+
+                        debounceRef.current = setTimeout(async () => {
+                            const list = await fetchCitySuggestions(q);
+                            setSuggestions(list);
+                            setShowSuggestions(true);
+                        }, 250);
                     }}
                 />
                 <Pressable style={[styles.addBtn, { backgroundColor: activeTheme.accent }]} onPress={addCity}>
                     <Text style={styles.addBtnText}>Add</Text>
                 </Pressable>
             </View>
+
+            {showSuggestions && suggestions.length > 0 && (
+                <View style={[styles.suggestBox, { backgroundColor: activeTheme.card }]}>
+                    {suggestions.map((s) => (
+                        <Pressable
+                            key={s.label}
+                            style={styles.suggestRow}
+                            onPress={() => {
+                                setNewCity(s.label);
+                                setShowSuggestions(false);
+                                setSuggestions([]);
+                            }}
+                        >
+                            <Text style={{ color: activeTheme.text, fontWeight: "700" }}>{s.label}</Text>
+                        </Pressable>
+                    ))}
+                </View>
+            )}
 
             {status && (
                 <Text style={[styles.status, status.type === "error" ? styles.statusError : styles.statusSuccess]}>
@@ -200,6 +248,7 @@ export default function HomeScreen({ navigation }: Props) {
                 data={cities}
                 keyExtractor={(item) => item}
                 contentContainerStyle={{ gap: 10, paddingVertical: 12 }}
+                keyboardShouldPersistTaps="handled"
                 renderItem={({ item }) => (
                     <CityRow
                         city={item}
@@ -217,6 +266,7 @@ export default function HomeScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
     center: { flex: 1, alignItems: "center", justifyContent: "center" },
     container: { flex: 1, padding: 16 },
+
     row: { flexDirection: "row", gap: 10 },
     rowBetween: {
         flexDirection: "row",
@@ -224,13 +274,27 @@ const styles = StyleSheet.create({
         alignItems: "center",
         marginTop: 14,
     },
+
     input: { flex: 1, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 12 },
     addBtn: { paddingHorizontal: 16, borderRadius: 12, alignItems: "center", justifyContent: "center" },
     addBtnText: { color: "white", fontWeight: "800" },
+
     h2: { fontSize: 20, fontWeight: "800" },
     link: { fontWeight: "800" },
 
     status: { marginTop: 10, textAlign: "center", fontWeight: "800" },
     statusError: { color: "#DC2626" },
     statusSuccess: { color: "#16A34A" },
+
+    suggestBox: {
+        marginTop: 10,
+        borderRadius: 12,
+        overflow: "hidden",
+    },
+    suggestRow: {
+        paddingHorizontal: 12,
+        paddingVertical: 10,
+        borderTopWidth: StyleSheet.hairlineWidth,
+        borderTopColor: "#D1D5DB",
+    },
 });
