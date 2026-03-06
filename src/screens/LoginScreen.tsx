@@ -1,5 +1,15 @@
+// src/screens/LoginScreen.tsx
 import React, { useState } from "react";
-import { View, Text, TextInput, Pressable, StyleSheet } from "react-native";
+import {
+    View,
+    Text,
+    TextInput,
+    Pressable,
+    StyleSheet,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+} from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation/types";
 import { supabase } from "../services/supabase";
@@ -25,6 +35,7 @@ export default function LoginScreen({ navigation }: Props) {
         setMessageType("error");
         setMessage(t);
     };
+
     const showSuccess = (t: string) => {
         setMessageType("success");
         setMessage(t);
@@ -52,8 +63,14 @@ export default function LoginScreen({ navigation }: Props) {
                 }
                 return;
             }
+
             showSuccess("Logged in!");
-            navigation.replace("Home");
+
+            // Reset stack so user can't go "back" to Login
+            navigation.reset({
+                index: 0,
+                routes: [{ name: "Home" }],
+            });
         } finally {
             setSubmitting(false);
         }
@@ -89,84 +106,88 @@ export default function LoginScreen({ navigation }: Props) {
     };
 
     return (
-        <View style={styles.screen}>
-            {/* Header */}
-            <View style={styles.header}>
-                <Text style={styles.logo}>☀️</Text>
-                <Text style={styles.title}>React Weather</Text>
-                <Text style={styles.subtitle}>Log in to sync your saved cities</Text>
-                <View style={styles.chipRow}>
-                    <Chip label="Clear" bg="#FFB703" text="#0B1220" />
-                    <Chip label="Rain" bg="#0EA5E9" text="#06111D" />
-                    <Chip label="Snow" bg="#E0F2FE" text="#0B1220" />
+        <KeyboardAvoidingView
+            style={{ flex: 1 }}
+            behavior={Platform.OS === "ios" ? "padding" : undefined}
+            keyboardVerticalOffset={Platform.OS === "ios" ? 40 : 0}
+        >
+            <ScrollView contentContainerStyle={styles.screen} keyboardShouldPersistTaps="handled">
+                <View style={styles.header}>
+                    <Text style={styles.logo}>☀️</Text>
+                    <Text style={styles.title}>React Weather</Text>
+                    <Text style={styles.subtitle}>Log in to sync your saved cities</Text>
+                    <View style={styles.chipRow}>
+                        <Chip label="Clear" bg="#FFB703" text="#0B1220" />
+                        <Chip label="Rain" bg="#0EA5E9" text="#06111D" />
+                        <Chip label="Snow" bg="#E0F2FE" text="#0B1220" />
+                    </View>
                 </View>
-            </View>
 
-            {/* Card */}
-            <View style={styles.card}>
-                <Text style={styles.cardTitle}>Sign in</Text>
+                <View style={styles.card}>
+                    <Text style={styles.cardTitle}>Sign in</Text>
 
-                <TextInput
-                    style={styles.input}
-                    placeholder="Email"
-                    autoCapitalize="none"
-                    keyboardType="email-address"
-                    value={email}
-                    onChangeText={(t) => {
-                        setEmail(t);
-                        setMessage("");
-                    }}
-                    editable={!submitting}
-                    returnKeyType="next"
-                />
-
-                <View style={styles.pwRow}>
                     <TextInput
-                        style={[styles.input, { flex: 1 }]}
-                        placeholder="Password"
-                        secureTextEntry={!showPw}
-                        value={password}
+                        style={styles.input}
+                        placeholder="Email"
+                        autoCapitalize="none"
+                        keyboardType="email-address"
+                        value={email}
                         onChangeText={(t) => {
-                            setPassword(t);
+                            setEmail(t);
                             setMessage("");
                         }}
                         editable={!submitting}
-                        returnKeyType="done"
+                        returnKeyType="next"
                     />
-                    <Pressable style={styles.showBtn} onPress={() => setShowPw((v) => !v)}>
-                        <Text style={styles.showBtnText}>{showPw ? "Hide" : "Show"}</Text>
+
+                    <View style={styles.pwRow}>
+                        <TextInput
+                            style={[styles.input, { flex: 1 }]}
+                            placeholder="Password"
+                            secureTextEntry={!showPw}
+                            value={password}
+                            onChangeText={(t) => {
+                                setPassword(t);
+                                setMessage("");
+                            }}
+                            editable={!submitting}
+                            returnKeyType="done"
+                        />
+                        <Pressable style={styles.showBtn} onPress={() => setShowPw((v) => !v)}>
+                            <Text style={styles.showBtnText}>{showPw ? "Hide" : "Show"}</Text>
+                        </Pressable>
+                    </View>
+
+                    <Pressable
+                        disabled={submitting}
+                        style={[styles.primaryBtn, submitting && styles.disabled]}
+                        onPress={onLogin}
+                    >
+                        <Text style={styles.primaryText}>{submitting ? "Working..." : "Log in"}</Text>
                     </Pressable>
+
+                    <Pressable
+                        disabled={submitting}
+                        style={[styles.secondaryBtn, submitting && styles.disabled]}
+                        onPress={onSignup}
+                    >
+                        <Text style={styles.secondaryText}>Create account</Text>
+                    </Pressable>
+
+                    <Pressable disabled={submitting} onPress={onForgotPassword}>
+                        <Text style={styles.link}>Forgot password?</Text>
+                    </Pressable>
+
+                    {!!message && (
+                        <Text style={[styles.message, messageType === "error" ? styles.msgErr : styles.msgOk]}>
+                            {message}
+                        </Text>
+                    )}
                 </View>
 
-                <Pressable
-                    disabled={submitting}
-                    style={[styles.primaryBtn, submitting && styles.disabled]}
-                    onPress={onLogin}
-                >
-                    <Text style={styles.primaryText}>{submitting ? "Working..." : "Log in"}</Text>
-                </Pressable>
-
-                <Pressable
-                    disabled={submitting}
-                    style={[styles.secondaryBtn, submitting && styles.disabled]}
-                    onPress={onSignup}
-                >
-                    <Text style={styles.secondaryText}>Create account</Text>
-                </Pressable>
-
-                <Pressable disabled={submitting} onPress={onForgotPassword}>
-                    <Text style={styles.link}>Forgot password?</Text>
-                </Pressable>
-
-                {!!message && (
-                    <Text style={[styles.message, messageType === "error" ? styles.msgErr : styles.msgOk]}>
-                        {message}
-                    </Text>
-                )}
-            </View>
-
-            <Text style={styles.footerNote}>Your saved cities are tied to your account.</Text>
-        </View>
+                <Text style={styles.footerNote}>Your saved cities are tied to your account.</Text>
+            </ScrollView>
+        </KeyboardAvoidingView>
     );
 }
 
@@ -178,7 +199,10 @@ const styles = StyleSheet.create({
         borderRadius: 999,
     },
     chipText: { fontWeight: "900", fontSize: 12 },
-    screen: { flex: 1, padding: 16, justifyContent: "center", gap: 16, backgroundColor: "#E5E7EB" },
+
+    // ScrollView content container: centers content but allows scrolling when keyboard is open
+    screen: { flexGrow: 1, padding: 16, justifyContent: "center", gap: 16, backgroundColor: "#E5E7EB" },
+
     header: { alignItems: "center", marginBottom: 6 },
     logo: { fontSize: 42, marginBottom: 6 },
     title: { fontSize: 28, fontWeight: "900" },

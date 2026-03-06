@@ -22,10 +22,7 @@ export default function WeatherDetailScreen({ route, navigation }: Props) {
     // Loading state for the weather request
     const [loading, setLoading] = useState(true);
 
-    /**
-     * Loads weather for the current city.
-     * Used both when the screen loads and when the user taps "Retry".
-     */
+    //Loads weather for the current city when screen loads or "Retry" tapped.
     const loadWeather = async () => {
         setLoading(true);
         try {

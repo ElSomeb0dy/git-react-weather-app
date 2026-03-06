@@ -29,8 +29,13 @@ export default function SettingsScreen({ navigation }: Props) {
     // Log out by clearing session and going back to Login
     const logout = async () => {
         await supabase.auth.signOut();
-        navigation.replace("Login");
+
+        navigation.reset({
+            index: 0,
+            routes: [{ name: "Login" }],
+        });
     };
+
     return (
         <View style={styles.container}>
             <Text style={styles.h1}>Preferences</Text>
