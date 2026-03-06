@@ -1,3 +1,4 @@
+// src/components/CityRow.tsx
 import React from "react";
 import { Pressable, Text, View, StyleSheet } from "react-native";
 import { CurrentWeather } from "../types/weather";
@@ -5,23 +6,26 @@ import { CurrentWeather } from "../types/weather";
 type Props = {
     city: string;
     weather?: CurrentWeather;
+    unit: "C" | "F";
     onOpen: () => void;
     onRemove: () => void;
 };
 
-export default function CityRow({ city, weather, onOpen, onRemove }: Props) {
+export default function CityRow({ city, weather, unit, onOpen, onRemove }: Props) {
+    const temp =
+        weather
+            ? unit === "C"
+                ? `${weather.tempC}°C`
+                : `${weather.tempF}°F`
+            : null;
+
     return (
-        // Navigate to the weather detail screen on tap
         <Pressable testID="city-row" style={styles.card} onPress={onOpen}>
-            {/* Display city identity and current weather metrics */}
             <View style={{ flex: 1 }}>
                 <Text style={styles.city}>{city}</Text>
-                <Text>
-                    {weather ? `${weather.description} • ${weather.tempC}°C` : "Loading weather…"}
-                </Text>
+                <Text>{weather ? `${weather.description} • ${temp}` : "Loading weather…"}</Text>
             </View>
 
-            {/* Action trigger to delete the current entry from storage */}
             <Pressable testID="remove-city" onPress={onRemove} style={styles.removeBtn}>
                 <Text style={styles.removeText}>Remove</Text>
             </Pressable>

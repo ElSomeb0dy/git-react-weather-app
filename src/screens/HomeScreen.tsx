@@ -1,12 +1,14 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useCallback } from "react";
 import ThemeBackground from "../components/ThemeBackground";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { useFocusEffect } from "@react-navigation/native";
 import { RootStackParamList } from "../navigation/types";
 import { fetchCurrentWeather } from "../services/openWeather";
 import { CurrentWeather } from "../types/weather";
 import { themeForCondition } from "../theme/weatherTheme";
 import CityRow from "../components/CityRow";
 import { supabase } from "../services/supabase";
+import { loadSettings } from "../storage/settings";
 import {
     View,
     Text,
@@ -30,6 +32,9 @@ export default function HomeScreen({ navigation }: Props) {
     const [loading, setLoading] = useState(true);
     const [weatherMap, setWeatherMap] = useState<Record<string, CurrentWeather>>({});
 
+    // Temperature unit used for the Home list
+    const [unit, setUnit] = useState<"C" | "F">("C");
+
     // On-screen feedback (success/error)
     const [status, setStatus] = useState<{ type: "error" | "success"; text: string } | null>(null);
     const showError = (text: string) => setStatus({ type: "error", text });
@@ -41,6 +46,24 @@ export default function HomeScreen({ navigation }: Props) {
         const first = cities[0] && weatherMap[cities[0]];
         return first ? themeForCondition(first.condition) : themeForCondition("Clouds");
     }, [cities, weatherMap]);
+
+    // Load unit on mount
+    useEffect(() => {
+        (async () => {
+            const s = await loadSettings();
+            setUnit(s.unit);
+        })();
+    }, []);
+
+    // Reload unit whenever Home becomes focused (coming back from Settings)
+    useFocusEffect(
+        useCallback(() => {
+            (async () => {
+                const s = await loadSettings();
+                setUnit(s.unit);
+            })();
+        }, [])
+    );
 
     // Load user's cities from Supabase on mount
     useEffect(() => {
@@ -55,7 +78,6 @@ export default function HomeScreen({ navigation }: Props) {
 
             if (error) {
                 console.warn(error);
-                // Keep the alert if you want, but also show on-screen status
                 Alert.alert("Database error", "Couldn't load your saved cities.");
                 showError("Couldn't load your saved cities.");
                 setCities([]);
@@ -95,7 +117,6 @@ export default function HomeScreen({ navigation }: Props) {
             return;
         }
 
-        // Validate city exists via OpenWeather
         try {
             await fetchCurrentWeather(trimmed);
         } catch {
@@ -107,13 +128,10 @@ export default function HomeScreen({ navigation }: Props) {
 
         if (error) {
             console.warn(error);
-
-            // Postgres unique violation (duplicate)
-            if (error.code === "23505") {
+            if ((error as any).code === "23505") {
                 showError("That city is already in your list.");
                 return;
             }
-
             showError("Couldn't save city. Please try again.");
             return;
         }
@@ -148,8 +166,8 @@ export default function HomeScreen({ navigation }: Props) {
 
     return (
         <View style={[styles.container, { backgroundColor: activeTheme.background }]}>
-            {/* Add city input + button */}
             <ThemeBackground theme={activeTheme} />
+
             <View style={styles.row}>
                 <TextInput
                     style={[styles.input, { backgroundColor: activeTheme.card }]}
@@ -165,14 +183,12 @@ export default function HomeScreen({ navigation }: Props) {
                 </Pressable>
             </View>
 
-            {/* Status banner */}
             {status && (
                 <Text style={[styles.status, status.type === "error" ? styles.statusError : styles.statusSuccess]}>
                     {status.text}
                 </Text>
             )}
 
-            {/* Header row */}
             <View style={styles.rowBetween}>
                 <Text style={[styles.h2, { color: activeTheme.text }]}>Locations</Text>
                 <Pressable onPress={() => navigation.navigate("Settings")}>
@@ -188,6 +204,7 @@ export default function HomeScreen({ navigation }: Props) {
                     <CityRow
                         city={item}
                         weather={weatherMap[item]}
+                        unit={unit}
                         onOpen={() => navigation.navigate("WeatherDetail", { city: item })}
                         onRemove={() => removeCity(item)}
                     />
@@ -213,7 +230,6 @@ const styles = StyleSheet.create({
     h2: { fontSize: 20, fontWeight: "800" },
     link: { fontWeight: "800" },
 
-    // Status banner styles
     status: { marginTop: 10, textAlign: "center", fontWeight: "800" },
     statusError: { color: "#DC2626" },
     statusSuccess: { color: "#16A34A" },
