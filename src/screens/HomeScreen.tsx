@@ -1,4 +1,12 @@
 import React, { useEffect, useMemo, useState } from "react";
+import ThemeBackground from "../components/ThemeBackground";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { RootStackParamList } from "../navigation/types";
+import { fetchCurrentWeather } from "../services/openWeather";
+import { CurrentWeather } from "../types/weather";
+import { themeForCondition } from "../theme/weatherTheme";
+import CityRow from "../components/CityRow";
+import { supabase } from "../services/supabase";
 import {
     View,
     Text,
@@ -9,14 +17,6 @@ import {
     ActivityIndicator,
     Alert,
 } from "react-native";
-
-import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { RootStackParamList } from "../navigation/types";
-import { fetchCurrentWeather } from "../services/openWeather";
-import { CurrentWeather } from "../types/weather";
-import { themeForCondition } from "../theme/weatherTheme";
-import CityRow from "../components/CityRow";
-import { supabase } from "../services/supabase";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Home">;
 
@@ -149,6 +149,7 @@ export default function HomeScreen({ navigation }: Props) {
     return (
         <View style={[styles.container, { backgroundColor: activeTheme.background }]}>
             {/* Add city input + button */}
+            <ThemeBackground theme={activeTheme} />
             <View style={styles.row}>
                 <TextInput
                     style={[styles.input, { backgroundColor: activeTheme.card }]}

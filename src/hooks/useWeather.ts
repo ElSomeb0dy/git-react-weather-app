@@ -8,6 +8,8 @@ export function useWeather(city: string) {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
+        // The "alive" flag prevents memory leaks by tracking if the
+        // component is still mounted when the async operation finishes
         let alive = true;
 
         (async () => {
@@ -16,14 +18,18 @@ export function useWeather(city: string) {
 
             try {
                 const w = await fetchCurrentWeather(city);
+                // Only update state if the component is still active
                 if (alive) setData(w);
             } catch (e: any) {
+                // Surface API errors to the UI
                 if (alive) setError(e?.message ?? "Unknown error");
             } finally {
+                // Ensure loading indicator is always toggled off
                 if (alive) setLoading(false);
             }
         })();
 
+        // Cleanup
         return () => {
             alive = false;
         };

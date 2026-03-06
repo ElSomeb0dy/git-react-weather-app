@@ -6,6 +6,7 @@ import { fetchCurrentWeather } from "../services/openWeather";
 import { CurrentWeather } from "../types/weather";
 import { themeForCondition } from "../theme/weatherTheme";
 import { loadSettings } from "../storage/settings";
+import ThemeBackground from "../components/ThemeBackground";
 
 type Props = NativeStackScreenProps<RootStackParamList, "WeatherDetail">;
 
@@ -85,6 +86,7 @@ export default function WeatherDetailScreen({ route, navigation }: Props) {
 
     return (
         <View style={[styles.container, { backgroundColor: theme.background }]}>
+            <ThemeBackground theme={theme} />
             <View style={[styles.card, { backgroundColor: theme.card }]}>
                 <Text style={[styles.title, { color: theme.text }]}>
                     {weather.city}, {weather.country}

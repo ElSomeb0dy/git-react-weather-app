@@ -11,7 +11,9 @@ type Props = {
 
 export default function CityRow({ city, weather, onOpen, onRemove }: Props) {
     return (
+        // Navigate to the weather detail screen on tap
         <Pressable testID="city-row" style={styles.card} onPress={onOpen}>
+            {/* Display city identity and current weather metrics */}
             <View style={{ flex: 1 }}>
                 <Text style={styles.city}>{city}</Text>
                 <Text>
@@ -19,6 +21,7 @@ export default function CityRow({ city, weather, onOpen, onRemove }: Props) {
                 </Text>
             </View>
 
+            {/* Action trigger to delete the current entry from storage */}
             <Pressable testID="remove-city" onPress={onRemove} style={styles.removeBtn}>
                 <Text style={styles.removeText}>Remove</Text>
             </Pressable>
