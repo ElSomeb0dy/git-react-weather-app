@@ -209,12 +209,17 @@ export default function HomeScreen({ navigation }: Props) {
 
             {locationWeather && (
                 <View style={[styles.locationCard, { backgroundColor: activeTheme.card }]}>
-                    <Text style={[styles.locationLabel, { color: activeTheme.text }]}>📍 My Location</Text>
-                    <Text style={[styles.locationCity, { color: activeTheme.text }]}>
-                        {locationWeather.city}, {locationWeather.country}
-                    </Text>
-                    <Text style={{ color: activeTheme.text }}>
-                        {locationWeather.description} • {unit === "C" ? `${locationWeather.tempC}°C` : `${locationWeather.tempF}°F`}
+                    <View style={{ flex: 1 }}>
+                        <Text style={[styles.locationLabel, { color: activeTheme.text }]}>📍 My Location</Text>
+                        <Text style={[styles.locationCity, { color: activeTheme.text }]}>
+                            {locationWeather.city}, {locationWeather.country}
+                        </Text>
+                        <Text style={{ color: activeTheme.text, opacity: 0.7 }}>
+                            {locationWeather.description}
+                        </Text>
+                    </View>
+                    <Text style={[styles.locationTemp, { color: activeTheme.text }]}>
+                        {unit === "C" ? `${locationWeather.tempC}°C` : `${locationWeather.tempF}°F`}
                     </Text>
                 </View>
             )}
@@ -290,6 +295,8 @@ export default function HomeScreen({ navigation }: Props) {
                         city={item}
                         weather={weatherMap[item]}
                         unit={unit}
+                        cardColor={activeTheme.card}
+                        textColor={activeTheme.text}
                         onOpen={() => navigation.navigate("WeatherDetail", { city: item })}
                         onRemove={() => removeCity(item)}
                     />
@@ -326,9 +333,12 @@ const styles = StyleSheet.create({
         borderRadius: 16,
         padding: 14,
         marginBottom: 10,
+        flexDirection: "row",
+        alignItems: "center",
     },
     locationLabel: { fontSize: 12, fontWeight: "700", opacity: 0.6, marginBottom: 2 },
     locationCity: { fontSize: 18, fontWeight: "800" },
+    locationTemp: { fontSize: 22, fontWeight: "800" },
 
     suggestBox: {
         marginTop: 10,
