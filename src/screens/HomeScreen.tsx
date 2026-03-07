@@ -124,19 +124,27 @@ export default function HomeScreen({ navigation }: Props) {
         setShowSuggestions(false);
         setSuggestions([]);
 
-        if (cities.some((c) => c.toLowerCase() === trimmed.toLowerCase())) {
+        // If the user didn't tap a suggestion, resolve to the first match
+        let city = trimmed;
+        const alreadyFormatted = suggestions.some((s) => s.label === trimmed);
+        if (!alreadyFormatted) {
+            const fetched = suggestions.length > 0 ? suggestions : await fetchCitySuggestions(trimmed);
+            if (fetched.length > 0) city = fetched[0].label;
+        }
+
+        if (cities.some((c) => c.toLowerCase() === city.toLowerCase())) {
             showError("That city is already in your list.");
             return;
         }
 
         try {
-            await fetchCurrentWeather(trimmed);
+            await fetchCurrentWeather(city);
         } catch {
             showError("City not found. Check spelling and try again.");
             return;
         }
 
-        const { error } = await supabase.from("user_cities").insert({ city: trimmed });
+        const { error } = await supabase.from("user_cities").insert({ city });
 
         if (error) {
             console.warn(error);
@@ -148,9 +156,9 @@ export default function HomeScreen({ navigation }: Props) {
             return;
         }
 
-        setCities([trimmed, ...cities]);
+        setCities([city, ...cities]);
         setNewCity("");
-        showSuccess(`Added ${trimmed}.`);
+        showSuccess(`Added ${city}.`);
     };
 
     const removeCity = async (city: string) => {
