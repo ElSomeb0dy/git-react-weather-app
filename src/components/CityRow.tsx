@@ -4,6 +4,7 @@ import { Pressable, Text, View, StyleSheet } from "react-native";
 import ReanimatedSwipeable, { SwipeableMethods } from "react-native-gesture-handler/ReanimatedSwipeable";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { CurrentWeather } from "../types/weather";
+import { tempColor } from "../utils/tempColor";
 
 type Props = {
     city: string;
@@ -44,7 +45,7 @@ export default function CityRow({ city, weather, unit, cardColor, textColor, onO
                             {weather ? weather.description : "Loading weather…"}
                         </Text>
                     </View>
-                    {temp && <Text style={[styles.temp, { color: textColor }]}>{temp}</Text>}
+                    {temp && <Text style={[styles.temp, { color: weather ? tempColor(weather.tempC) : textColor }]}>{temp}</Text>}
                 </Pressable>
             </ReanimatedSwipeable>
         </GestureHandlerRootView>

@@ -11,6 +11,7 @@ import {
 } from "../services/openWeather";
 import * as Location from "expo-location";
 import { CurrentWeather } from "../types/weather";
+import { tempColor } from "../utils/tempColor";
 import { themeForCondition } from "../theme/weatherTheme";
 import CityRow from "../components/CityRow";
 import { supabase } from "../services/supabase";
@@ -210,15 +211,24 @@ export default function HomeScreen({ navigation }: Props) {
             {locationWeather && (
                 <View style={[styles.locationCard, { backgroundColor: activeTheme.card }]}>
                     <View style={{ flex: 1 }}>
-                        <Text style={[styles.locationLabel, { color: activeTheme.text }]}>📍 My Location</Text>
                         <Text style={[styles.locationCity, { color: activeTheme.text }]}>
-                            {locationWeather.city}, {locationWeather.country}
+                            📍 {locationWeather.city}, {locationWeather.country}
                         </Text>
-                        <Text style={{ color: activeTheme.text, opacity: 0.7 }}>
+                        <Text style={{ color: activeTheme.text, opacity: 0.7, marginBottom: 10 }}>
                             {locationWeather.description}
                         </Text>
+                        <View style={styles.locationStats}>
+                            <View style={[styles.statChip, { backgroundColor: activeTheme.background }]}>
+                                <Text style={[styles.statLabel, { color: activeTheme.text }]}>💧 Humidity</Text>
+                                <Text style={[styles.statValue, { color: activeTheme.text }]}>{locationWeather.humidity}%</Text>
+                            </View>
+                            <View style={[styles.statChip, { backgroundColor: activeTheme.background }]}>
+                                <Text style={[styles.statLabel, { color: activeTheme.text }]}>💨 Wind</Text>
+                                <Text style={[styles.statValue, { color: activeTheme.text }]}>{locationWeather.windSpeed} m/s</Text>
+                            </View>
+                        </View>
                     </View>
-                    <Text style={[styles.locationTemp, { color: activeTheme.text }]}>
+                    <Text style={[styles.locationTemp, { color: tempColor(locationWeather.tempC) }]}>
                         {unit === "C" ? `${locationWeather.tempC}°C` : `${locationWeather.tempF}°F`}
                     </Text>
                 </View>
@@ -336,9 +346,12 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
     },
-    locationLabel: { fontSize: 12, fontWeight: "700", opacity: 0.6, marginBottom: 2 },
     locationCity: { fontSize: 18, fontWeight: "800" },
     locationTemp: { fontSize: 22, fontWeight: "800" },
+    locationStats: { flexDirection: "row", gap: 8 },
+    statChip: { borderRadius: 10, paddingHorizontal: 10, paddingVertical: 6 },
+    statLabel: { fontSize: 11, fontWeight: "600", opacity: 0.6 },
+    statValue: { fontSize: 13, fontWeight: "800" },
 
     suggestBox: {
         marginTop: 10,
