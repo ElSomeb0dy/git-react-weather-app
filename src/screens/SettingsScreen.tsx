@@ -4,11 +4,13 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation/types";
 import { loadSettings, saveSettings } from "../storage/settings";
 import { supabase } from "../services/supabase";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Settings">;
 
 export default function SettingsScreen({ navigation }: Props) {
-    // User preference for temperature unit
+    const insets = useSafeAreaInsets();
     const [unit, setUnit] = useState<"C" | "F">("C");
 
     // Load settings on mount
@@ -37,7 +39,10 @@ export default function SettingsScreen({ navigation }: Props) {
     };
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { paddingTop: insets.top + 16 }]}>
+            <Pressable onPress={() => navigation.goBack()} hitSlop={8} style={{ marginBottom: 8 }}>
+                <Ionicons name="chevron-back" size={26} color="#111827" />
+            </Pressable>
             <Text style={styles.h1}>Preferences</Text>
 
             <View style={styles.card}>
