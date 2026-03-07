@@ -15,6 +15,7 @@ export type Theme = {
     decorations?: Decoration[];
 };
 
+// Different themes
 const THEMES: Record<string, Theme> = {
     Clear: {
         background: "#FFEDD5",

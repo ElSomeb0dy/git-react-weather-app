@@ -1,4 +1,3 @@
-// src/screens/HomeScreen.tsx
 import React, { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import ThemeBackground from "../components/ThemeBackground";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -32,12 +31,11 @@ type CityRowDb = {
 };
 
 export default function HomeScreen({ navigation }: Props) {
+
     const [cities, setCities] = useState<string[]>([]);
     const [newCity, setNewCity] = useState("");
     const [loading, setLoading] = useState(true);
     const [weatherMap, setWeatherMap] = useState<Record<string, CurrentWeather>>({});
-
-    // Temperature unit used for the Home list
     const [unit, setUnit] = useState<"C" | "F">("C");
 
     // On-screen feedback (success/error)
@@ -217,8 +215,7 @@ export default function HomeScreen({ navigation }: Props) {
                 <View style={[styles.suggestBox, { backgroundColor: activeTheme.card }]}>
                     {suggestions.map((s) => (
                         <Pressable
-                            key={s.label}
-                            style={styles.suggestRow}
+                            key={`${s.lat},${s.lon}`}                            style={styles.suggestRow}
                             onPress={() => {
                                 setNewCity(s.label);
                                 setShowSuggestions(false);

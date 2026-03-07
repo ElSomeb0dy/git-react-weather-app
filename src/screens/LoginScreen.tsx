@@ -1,4 +1,3 @@
-// src/screens/LoginScreen.tsx
 import React, { useState } from "react";
 import {
     View,
@@ -200,7 +199,6 @@ const styles = StyleSheet.create({
     },
     chipText: { fontWeight: "900", fontSize: 12 },
 
-    // ScrollView content container: centers content but allows scrolling when keyboard is open
     screen: { flexGrow: 1, padding: 16, justifyContent: "center", gap: 16, backgroundColor: "#E5E7EB" },
 
     header: { alignItems: "center", marginBottom: 6 },
