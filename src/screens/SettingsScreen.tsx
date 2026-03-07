@@ -41,7 +41,7 @@ export default function SettingsScreen({ navigation }: Props) {
             <Text style={styles.h1}>Preferences</Text>
 
             <View style={styles.card}>
-                <Text style={styles.label}>Temperature unit</Text>
+                <Text style={styles.label}>Temperature Unit</Text>
                 <Pressable style={styles.toggle} onPress={toggleUnit}>
                     <Text style={styles.toggleText}>
                         {unit === "C" ? "Celsius (°C)" : "Fahrenheit (°F)"}

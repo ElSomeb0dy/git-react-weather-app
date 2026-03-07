@@ -7,11 +7,13 @@ import { CurrentWeather } from "../types/weather";
 import { themeForCondition } from "../theme/weatherTheme";
 import { loadSettings } from "../storage/settings";
 import ThemeBackground from "../components/ThemeBackground";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
 
 type Props = NativeStackScreenProps<RootStackParamList, "WeatherDetail">;
 
 export default function WeatherDetailScreen({ route, navigation }: Props) {
-    // City name passed from Home screen via navigation params
+    const insets = useSafeAreaInsets();
     const { city } = route.params;
 
     // Current weather data for this city
@@ -81,12 +83,20 @@ export default function WeatherDetailScreen({ route, navigation }: Props) {
     // Display temperature in user's chosen unit
     const temp = unit === "C" ? `${weather.tempC}°C` : `${weather.tempF}°F`;
 
-    // OpenWeather icon URL
     const iconUrl = `https://openweathermap.org/img/wn/${weather.icon}@2x.png`;
 
     return (
         <View style={[styles.container, { backgroundColor: theme.background }]}>
             <ThemeBackground theme={theme} />
+
+            <Pressable
+                style={[styles.backBtn, { top: insets.top + 12 }]}
+                onPress={() => navigation.goBack()}
+                hitSlop={8}
+            >
+                <Ionicons name="chevron-back" size={26} color={theme.accent} />
+            </Pressable>
+
             <View style={[styles.card, { backgroundColor: theme.card }]}>
                 <Text style={[styles.title, { color: theme.text }]}>
                     {weather.city}, {weather.country}
@@ -128,8 +138,7 @@ const styles = StyleSheet.create({
     row: { flexDirection: "row", alignItems: "center", gap: 10, marginTop: 10 },
     temp: { fontSize: 38, fontWeight: "900" },
     settingsBtn: { marginTop: 14, padding: 12, borderRadius: 12 },
-
-    // Styles for the Retry button shown in the failure state
     retryBtn: { marginTop: 12, backgroundColor: "#111827", padding: 12, borderRadius: 12 },
     retryText: { color: "white", fontWeight: "800" },
+    backBtn: { position: "absolute", left: 12, zIndex: 10, padding: 4 },
 });

@@ -3,6 +3,8 @@ import ThemeBackground from "../components/ThemeBackground";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useFocusEffect } from "@react-navigation/native";
 import { RootStackParamList } from "../navigation/types";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
 import {
     fetchCurrentWeather,
     fetchCurrentWeatherByCoords,
@@ -33,8 +35,17 @@ type CityRowDb = {
     city: string;
 };
 
+function getGreeting(): string {
+    const h = new Date().getHours();
+    if (h >= 5 && h < 12) return "Good morning";
+    if (h >= 12 && h < 17) return "Good afternoon";
+    if (h >= 17 && h < 21) return "Good evening";
+    return "Good night";
+}
+
 export default function HomeScreen({ navigation }: Props) {
 
+    const insets = useSafeAreaInsets();
     const [cities, setCities] = useState<string[]>([]);
     const [newCity, setNewCity] = useState("");
     const [loading, setLoading] = useState(true);
@@ -63,6 +74,10 @@ export default function HomeScreen({ navigation }: Props) {
             }
         })();
     }, []);
+
+    // Add city input visibility
+    const [showInput, setShowInput] = useState(false);
+    const inputRef = useRef<TextInput>(null);
 
     // Autocomplete suggestions
     const [suggestions, setSuggestions] = useState<CitySuggestion[]>([]);
@@ -178,6 +193,7 @@ export default function HomeScreen({ navigation }: Props) {
 
         setCities([city, ...cities]);
         setNewCity("");
+        setShowInput(false);
         showSuccess(`Added ${city}.`);
     };
 
@@ -205,8 +221,15 @@ export default function HomeScreen({ navigation }: Props) {
     }
 
     return (
-        <View style={[styles.container, { backgroundColor: activeTheme.background }]}>
+        <View style={[styles.container, { backgroundColor: activeTheme.background, paddingTop: insets.top + 16 }]}>
             <ThemeBackground theme={activeTheme} />
+
+            <View style={styles.greetingRow}>
+                <Text style={[styles.greeting, { color: activeTheme.text }]}>{getGreeting()}</Text>
+                <Pressable onPress={() => navigation.navigate("Settings")} hitSlop={8}>
+                    <Ionicons name="settings-outline" size={22} color={activeTheme.accent} />
+                </Pressable>
+            </View>
 
             {locationWeather && (
                 <View style={[styles.locationCard, { backgroundColor: activeTheme.card }]}>
@@ -234,36 +257,40 @@ export default function HomeScreen({ navigation }: Props) {
                 </View>
             )}
 
-            <View style={styles.row}>
-                <TextInput
-                    style={[styles.input, { backgroundColor: activeTheme.card }]}
-                    placeholder="Add a city (e.g., London)"
-                    value={newCity}
-                    onChangeText={(t) => {
-                        setNewCity(t);
-                        clearStatus();
+            {showInput && (
+                <View style={styles.row}>
+                    <TextInput
+                        ref={inputRef}
+                        style={[styles.input, { backgroundColor: activeTheme.card }]}
+                        placeholder="Add a city (e.g., London)"
+                        value={newCity}
+                        autoFocus
+                        onBlur={() => { if (!newCity.trim()) setShowInput(false); }}
+                        onChangeText={(t) => {
+                            setNewCity(t);
+                            clearStatus();
 
-                        // Debounced suggestions fetch
-                        if (debounceRef.current) clearTimeout(debounceRef.current);
+                            if (debounceRef.current) clearTimeout(debounceRef.current);
 
-                        const q = t.trim();
-                        if (q.length < 2) {
-                            setSuggestions([]);
-                            setShowSuggestions(false);
-                            return;
-                        }
+                            const q = t.trim();
+                            if (q.length < 2) {
+                                setSuggestions([]);
+                                setShowSuggestions(false);
+                                return;
+                            }
 
-                        debounceRef.current = setTimeout(async () => {
-                            const list = await fetchCitySuggestions(q);
-                            setSuggestions(list);
-                            setShowSuggestions(true);
-                        }, 250);
-                    }}
-                />
-                <Pressable style={[styles.addBtn, { backgroundColor: activeTheme.accent }]} onPress={addCity}>
-                    <Text style={styles.addBtnText}>Add</Text>
-                </Pressable>
-            </View>
+                            debounceRef.current = setTimeout(async () => {
+                                const list = await fetchCitySuggestions(q);
+                                setSuggestions(list);
+                                setShowSuggestions(true);
+                            }, 250);
+                        }}
+                    />
+                    <Pressable style={[styles.addBtn, { backgroundColor: activeTheme.accent }]} onPress={addCity}>
+                        <Text style={styles.addBtnText}>Add</Text>
+                    </Pressable>
+                </View>
+            )}
 
             {showSuggestions && suggestions.length > 0 && (
                 <View style={[styles.suggestBox, { backgroundColor: activeTheme.card }]}>
@@ -290,9 +317,11 @@ export default function HomeScreen({ navigation }: Props) {
 
             <View style={styles.rowBetween}>
                 <Text style={[styles.h2, { color: activeTheme.text }]}>Locations</Text>
-                <Pressable onPress={() => navigation.navigate("Settings")}>
-                    <Text style={[styles.link, { color: activeTheme.accent }]}>Settings</Text>
-                </Pressable>
+                {!showInput && (
+                    <Pressable onPress={() => setShowInput(true)}>
+                        <Text style={[styles.link, { color: activeTheme.accent }]}>+ Add</Text>
+                    </Pressable>
+                )}
             </View>
 
             <FlatList
@@ -312,13 +341,14 @@ export default function HomeScreen({ navigation }: Props) {
                     />
                 )}
             />
+
         </View>
     );
 }
 
 const styles = StyleSheet.create({
     center: { flex: 1, alignItems: "center", justifyContent: "center" },
-    container: { flex: 1, padding: 16 },
+    container: { flex: 1, paddingHorizontal: 16, paddingBottom: 16 },
 
     row: { flexDirection: "row", gap: 10 },
     rowBetween: {
@@ -331,8 +361,7 @@ const styles = StyleSheet.create({
     input: { flex: 1, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 12 },
     addBtn: { paddingHorizontal: 16, borderRadius: 12, alignItems: "center", justifyContent: "center" },
     addBtnText: { color: "white", fontWeight: "800" },
-
-    h2: { fontSize: 20, fontWeight: "800" },
+h2: { fontSize: 20, fontWeight: "800" },
     link: { fontWeight: "800" },
 
     status: { marginTop: 10, textAlign: "center", fontWeight: "800" },
@@ -364,4 +393,12 @@ const styles = StyleSheet.create({
         borderTopWidth: StyleSheet.hairlineWidth,
         borderTopColor: "#D1D5DB",
     },
+
+    greetingRow: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginBottom: 14,
+    },
+    greeting: { fontSize: 22, fontWeight: "800" },
 });
