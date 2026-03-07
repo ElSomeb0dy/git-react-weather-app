@@ -1,6 +1,6 @@
 // src/components/CityRow.tsx
 import React, { useRef } from "react";
-import { Pressable, Text, View, StyleSheet } from "react-native";
+import { Pressable, Text, View, StyleSheet, Image } from "react-native";
 import ReanimatedSwipeable, { SwipeableMethods } from "react-native-gesture-handler/ReanimatedSwipeable";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { CurrentWeather } from "../types/weather";
@@ -39,10 +39,15 @@ export default function CityRow({ city, weather, unit, cardColor, textColor, onO
         <GestureHandlerRootView>
             <ReanimatedSwipeable ref={swipeableRef} renderRightActions={renderRightActions} overshootRight={false}>
                 <Pressable testID="city-row" style={[styles.card, { backgroundColor: cardColor }]} onPress={onOpen}>
-                    <View style={{ flex: 1 }}>
-                        <Text style={[styles.city, { color: textColor }]}>{city}</Text>
-                        <Text style={{ color: textColor, opacity: 0.7 }}>
-                            {weather ? weather.description : "Loading weather…"}
+                    <View style={{ flex: 1, flexDirection: "row", alignItems: "center", gap: 6 }}>
+                        {weather?.icon && (
+                            <Image
+                                source={{ uri: `https://openweathermap.org/img/wn/${weather.icon}@2x.png` }}
+                                style={{ width: 36, height: 36 }}
+                            />
+                        )}
+                        <Text style={[styles.city, { color: textColor }]}>
+                            {weather ? `${weather.city}, ${weather.country}` : city}
                         </Text>
                     </View>
                     {temp && <Text style={[styles.temp, { color: weather ? tempColor(weather.tempC) : textColor }]}>{temp}</Text>}

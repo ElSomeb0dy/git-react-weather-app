@@ -25,5 +25,7 @@ export type CurrentWeather = {
     icon: string;
     humidity: number;
     windSpeed: number;
+    feelsLikeC: number;
+    feelsLikeF: number;
     updatedAt: number; // epoch ms
 };

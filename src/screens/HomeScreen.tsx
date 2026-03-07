@@ -233,26 +233,18 @@ export default function HomeScreen({ navigation }: Props) {
 
             {locationWeather && (
                 <View style={[styles.locationCard, { backgroundColor: activeTheme.card }]}>
-                    <View style={{ flex: 1 }}>
-                        <Text style={[styles.locationCity, { color: activeTheme.text }]}>
-                            📍 {locationWeather.city}, {locationWeather.country}
-                        </Text>
-                        <Text style={{ color: activeTheme.text, opacity: 0.7, marginBottom: 10 }}>
-                            {locationWeather.description}
-                        </Text>
-                        <View style={styles.locationStats}>
-                            <View style={[styles.statChip, { backgroundColor: activeTheme.background }]}>
-                                <Text style={[styles.statLabel, { color: activeTheme.text }]}>💧 Humidity</Text>
-                                <Text style={[styles.statValue, { color: activeTheme.text }]}>{locationWeather.humidity}%</Text>
-                            </View>
-                            <View style={[styles.statChip, { backgroundColor: activeTheme.background }]}>
-                                <Text style={[styles.statLabel, { color: activeTheme.text }]}>💨 Wind</Text>
-                                <Text style={[styles.statValue, { color: activeTheme.text }]}>{locationWeather.windSpeed} m/s</Text>
-                            </View>
-                        </View>
-                    </View>
+                    <Ionicons name="location-outline" size={20} color={activeTheme.text} />
+                    <Text style={[styles.locationCity, { color: activeTheme.text }]}>
+                        {locationWeather.city}, {locationWeather.country}
+                    </Text>
                     <Text style={[styles.locationTemp, { color: tempColor(locationWeather.tempC) }]}>
                         {unit === "C" ? `${locationWeather.tempC}°C` : `${locationWeather.tempF}°F`}
+                    </Text>
+                    <Text style={[styles.locationFeelsLike, { color: activeTheme.text }]}>
+                        Feels Like: {unit === "C" ? `${locationWeather.feelsLikeC}°C` : `${locationWeather.feelsLikeF}°F`}
+                    </Text>
+                    <Text style={[styles.locationFeelsLike, { color: activeTheme.text }]}>
+                        H: {locationWeather.humidity}%{"   "}W: {locationWeather.windSpeed} m/s
                     </Text>
                 </View>
             )}
@@ -372,15 +364,11 @@ h2: { fontSize: 20, fontWeight: "800" },
         borderRadius: 16,
         padding: 14,
         marginBottom: 10,
-        flexDirection: "row",
         alignItems: "center",
     },
-    locationCity: { fontSize: 18, fontWeight: "800" },
-    locationTemp: { fontSize: 22, fontWeight: "800" },
-    locationStats: { flexDirection: "row", gap: 8 },
-    statChip: { borderRadius: 10, paddingHorizontal: 10, paddingVertical: 6 },
-    statLabel: { fontSize: 11, fontWeight: "600", opacity: 0.6 },
-    statValue: { fontSize: 13, fontWeight: "800" },
+    locationCity: { fontSize: 15, fontWeight: "600", marginBottom: 2, textAlign: "center" },
+    locationTemp: { fontSize: 48, fontWeight: "800", marginBottom: 2, textAlign: "center" },
+    locationFeelsLike: { fontSize: 13, opacity: 0.7, textAlign: "center" },
 
     suggestBox: {
         marginTop: 10,

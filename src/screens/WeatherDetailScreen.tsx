@@ -102,29 +102,34 @@ export default function WeatherDetailScreen({ route, navigation }: Props) {
                     {weather.city}, {weather.country}
                 </Text>
 
-                <View style={styles.row}>
-                    <Image source={{ uri: iconUrl }} style={{ width: 80, height: 80 }} />
-                    <View>
-                        <Text style={[styles.temp, { color: theme.text }]}>{temp}</Text>
-                        <Text style={{ color: theme.subtleText }}>{weather.description}</Text>
-                        <Text style={{ color: theme.subtleText }}>
-                            Humidity: {weather.humidity}% • Wind: {weather.windSpeed} m/s
+                <View style={styles.centerRow}>
+                    <Image source={{ uri: iconUrl }} style={{ width: 64, height: 64 }} />
+                    <Text style={[styles.temp, { color: theme.text }]}>{temp}</Text>
+                </View>
+
+                <Text style={[styles.description, { color: theme.subtleText }]}>{weather.description}</Text>
+
+                <View style={styles.statsRow}>
+                    <View style={styles.statItem}>
+                        <Text style={[styles.statLabel, { color: theme.subtleText }]}>Feels Like</Text>
+                        <Text style={[styles.statValue, { color: theme.text }]}>
+                            {unit === "C" ? `${weather.feelsLikeC}°C` : `${weather.feelsLikeF}°F`}
                         </Text>
+                    </View>
+                    <View style={styles.statItem}>
+                        <Text style={[styles.statLabel, { color: theme.subtleText }]}>Humidity</Text>
+                        <Text style={[styles.statValue, { color: theme.text }]}>{weather.humidity}%</Text>
+                    </View>
+                    <View style={styles.statItem}>
+                        <Text style={[styles.statLabel, { color: theme.subtleText }]}>Wind</Text>
+                        <Text style={[styles.statValue, { color: theme.text }]}>{weather.windSpeed} m/s</Text>
                     </View>
                 </View>
 
-                <Text style={{ marginTop: 10, color: theme.subtleText }}>
+                <Text style={{ marginTop: 10, color: theme.subtleText, fontSize: 11, textAlign: "center" }}>
                     Updated: {new Date(weather.updatedAt).toLocaleString()}
                 </Text>
 
-                <Pressable
-                    style={[styles.settingsBtn, { backgroundColor: theme.accent }]}
-                    onPress={() => navigation.navigate("Settings")}
-                >
-                    <Text style={{ color: "white", fontWeight: "800", textAlign: "center" }}>
-                        Settings
-                    </Text>
-                </Pressable>
             </View>
         </View>
     );
@@ -134,11 +139,17 @@ const styles = StyleSheet.create({
     center: { flex: 1, alignItems: "center", justifyContent: "center" },
     container: { flex: 1, padding: 16, justifyContent: "center" },
     card: { borderRadius: 18, padding: 16 },
-    title: { fontSize: 22, fontWeight: "900" },
+    title: { fontSize: 22, fontWeight: "900", textAlign: "center" },
     row: { flexDirection: "row", alignItems: "center", gap: 10, marginTop: 10 },
     temp: { fontSize: 38, fontWeight: "900" },
     settingsBtn: { marginTop: 14, padding: 12, borderRadius: 12 },
     retryBtn: { marginTop: 12, backgroundColor: "#111827", padding: 12, borderRadius: 12 },
     retryText: { color: "white", fontWeight: "800" },
     backBtn: { position: "absolute", left: 12, zIndex: 10, padding: 4 },
+    centerRow: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 10 },
+    description: { textAlign: "center", marginTop: 4, fontSize: 14 },
+    statsRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 16 },
+    statItem: { flex: 1, alignItems: "center" },
+    statLabel: { fontSize: 11, fontWeight: "600", opacity: 0.7, marginBottom: 2 },
+    statValue: { fontSize: 15, fontWeight: "800" },
 });

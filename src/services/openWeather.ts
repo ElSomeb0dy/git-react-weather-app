@@ -71,6 +71,7 @@ export async function fetchCurrentWeatherByCoords(lat: number, lon: number): Pro
 
     const data = await res.json();
     const c = kelvinToC(data.main.temp);
+    const fl = kelvinToC(data.main.feels_like);
     const condition = (data.weather?.[0]?.main ?? "Clouds") as WeatherCondition;
 
     return {
@@ -83,6 +84,8 @@ export async function fetchCurrentWeatherByCoords(lat: number, lon: number): Pro
         icon: data.weather?.[0]?.icon ?? "01d",
         humidity: data.main.humidity,
         windSpeed: data.wind.speed,
+        feelsLikeC: Math.round(fl * 10) / 10,
+        feelsLikeF: Math.round(cToF(fl) * 10) / 10,
         updatedAt: Date.now(),
     };
 }
@@ -99,6 +102,7 @@ export async function fetchCurrentWeather(city: string): Promise<CurrentWeather>
     const data = await res.json();
 
     const c = kelvinToC(data.main.temp);
+    const fl = kelvinToC(data.main.feels_like);
     const condition = (data.weather?.[0]?.main ?? "Clouds") as WeatherCondition;
 
     return {
@@ -111,6 +115,8 @@ export async function fetchCurrentWeather(city: string): Promise<CurrentWeather>
         icon: data.weather?.[0]?.icon ?? "01d",
         humidity: data.main.humidity,
         windSpeed: data.wind.speed,
+        feelsLikeC: Math.round(fl * 10) / 10,
+        feelsLikeF: Math.round(cToF(fl) * 10) / 10,
         updatedAt: Date.now(),
     };
 }
