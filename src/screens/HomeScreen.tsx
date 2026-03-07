@@ -5,9 +5,11 @@ import { useFocusEffect } from "@react-navigation/native";
 import { RootStackParamList } from "../navigation/types";
 import {
     fetchCurrentWeather,
+    fetchCurrentWeatherByCoords,
     fetchCitySuggestions,
     CitySuggestion,
 } from "../services/openWeather";
+import * as Location from "expo-location";
 import { CurrentWeather } from "../types/weather";
 import { themeForCondition } from "../theme/weatherTheme";
 import CityRow from "../components/CityRow";
@@ -43,6 +45,23 @@ export default function HomeScreen({ navigation }: Props) {
     const showError = (text: string) => setStatus({ type: "error", text });
     const showSuccess = (text: string) => setStatus({ type: "success", text });
     const clearStatus = () => setStatus(null);
+
+    // Current location weather
+    const [locationWeather, setLocationWeather] = useState<CurrentWeather | null>(null);
+
+    useEffect(() => {
+        (async () => {
+            const { status } = await Location.requestForegroundPermissionsAsync();
+            if (status !== "granted") return;
+            const loc = await Location.getCurrentPositionAsync({});
+            try {
+                const w = await fetchCurrentWeatherByCoords(loc.coords.latitude, loc.coords.longitude);
+                setLocationWeather(w);
+            } catch (e) {
+                console.warn("Location weather failed", e);
+            }
+        })();
+    }, []);
 
     // Autocomplete suggestions
     const [suggestions, setSuggestions] = useState<CitySuggestion[]>([]);
@@ -188,6 +207,18 @@ export default function HomeScreen({ navigation }: Props) {
         <View style={[styles.container, { backgroundColor: activeTheme.background }]}>
             <ThemeBackground theme={activeTheme} />
 
+            {locationWeather && (
+                <View style={[styles.locationCard, { backgroundColor: activeTheme.card }]}>
+                    <Text style={[styles.locationLabel, { color: activeTheme.text }]}>📍 My Location</Text>
+                    <Text style={[styles.locationCity, { color: activeTheme.text }]}>
+                        {locationWeather.city}, {locationWeather.country}
+                    </Text>
+                    <Text style={{ color: activeTheme.text }}>
+                        {locationWeather.description} • {unit === "C" ? `${locationWeather.tempC}°C` : `${locationWeather.tempF}°F`}
+                    </Text>
+                </View>
+            )}
+
             <View style={styles.row}>
                 <TextInput
                     style={[styles.input, { backgroundColor: activeTheme.card }]}
@@ -290,6 +321,14 @@ const styles = StyleSheet.create({
     status: { marginTop: 10, textAlign: "center", fontWeight: "800" },
     statusError: { color: "#DC2626" },
     statusSuccess: { color: "#16A34A" },
+
+    locationCard: {
+        borderRadius: 16,
+        padding: 14,
+        marginBottom: 10,
+    },
+    locationLabel: { fontSize: 12, fontWeight: "700", opacity: 0.6, marginBottom: 2 },
+    locationCity: { fontSize: 18, fontWeight: "800" },
 
     suggestBox: {
         marginTop: 10,

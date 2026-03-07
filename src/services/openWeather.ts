@@ -60,6 +60,33 @@ export async function fetchCitySuggestions(query: string, limit = 6): Promise<Ci
     return out;
 }
 
+export async function fetchCurrentWeatherByCoords(lat: number, lon: number): Promise<CurrentWeather> {
+    const url = `${BASE}?lat=${lat}&lon=${lon}&appid=${API_KEY}`;
+
+    const res = await fetch(url);
+    if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`Weather fetch failed (${res.status}): ${text}`);
+    }
+
+    const data = await res.json();
+    const c = kelvinToC(data.main.temp);
+    const condition = (data.weather?.[0]?.main ?? "Clouds") as WeatherCondition;
+
+    return {
+        city: data.name,
+        country: data.sys.country,
+        tempC: Math.round(c * 10) / 10,
+        tempF: Math.round(cToF(c) * 10) / 10,
+        condition,
+        description: data.weather?.[0]?.description ?? "",
+        icon: data.weather?.[0]?.icon ?? "01d",
+        humidity: data.main.humidity,
+        windSpeed: data.wind.speed,
+        updatedAt: Date.now(),
+    };
+}
+
 export async function fetchCurrentWeather(city: string): Promise<CurrentWeather> {
     const url = `${BASE}?q=${encodeURIComponent(city)}&appid=${API_KEY}`;
 
