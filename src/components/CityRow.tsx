@@ -1,6 +1,8 @@
 // src/components/CityRow.tsx
-import React from "react";
+import React, { useRef } from "react";
 import { Pressable, Text, View, StyleSheet } from "react-native";
+import ReanimatedSwipeable, { SwipeableMethods } from "react-native-gesture-handler/ReanimatedSwipeable";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { CurrentWeather } from "../types/weather";
 
 type Props = {
@@ -14,34 +16,52 @@ type Props = {
 };
 
 export default function CityRow({ city, weather, unit, cardColor, textColor, onOpen, onRemove }: Props) {
+    const swipeableRef = useRef<SwipeableMethods>(null);
     const temp = weather
         ? unit === "C" ? `${weather.tempC}°C` : `${weather.tempF}°F`
         : null;
 
-    return (
-        <Pressable testID="city-row" style={[styles.card, { backgroundColor: cardColor }]} onPress={onOpen}>
-            <View style={{ flex: 1 }}>
-                <Text style={[styles.city, { color: textColor }]}>{city}</Text>
-                <Text style={{ color: textColor, opacity: 0.7 }}>
-                    {weather ? weather.description : "Loading weather…"}
-                </Text>
-            </View>
-
-            <View style={styles.right}>
-                {temp && <Text style={[styles.temp, { color: textColor }]}>{temp}</Text>}
-                <Pressable testID="remove-city" onPress={onRemove} style={styles.removeBtn}>
-                    <Text style={styles.removeText}>Remove</Text>
-                </Pressable>
-            </View>
+    const renderRightActions = () => (
+        <Pressable
+            testID="remove-city"
+            style={styles.deleteAction}
+            onPress={() => {
+                swipeableRef.current?.close();
+                onRemove();
+            }}
+        >
+            <Text style={styles.deleteText}>Remove</Text>
         </Pressable>
+    );
+
+    return (
+        <GestureHandlerRootView>
+            <ReanimatedSwipeable ref={swipeableRef} renderRightActions={renderRightActions} overshootRight={false}>
+                <Pressable testID="city-row" style={[styles.card, { backgroundColor: cardColor }]} onPress={onOpen}>
+                    <View style={{ flex: 1 }}>
+                        <Text style={[styles.city, { color: textColor }]}>{city}</Text>
+                        <Text style={{ color: textColor, opacity: 0.7 }}>
+                            {weather ? weather.description : "Loading weather…"}
+                        </Text>
+                    </View>
+                    {temp && <Text style={[styles.temp, { color: textColor }]}>{temp}</Text>}
+                </Pressable>
+            </ReanimatedSwipeable>
+        </GestureHandlerRootView>
     );
 }
 
 const styles = StyleSheet.create({
     card: { borderRadius: 16, padding: 14, flexDirection: "row", alignItems: "center" },
     city: { fontSize: 18, fontWeight: "800" },
-    right: { alignItems: "flex-end", gap: 6 },
     temp: { fontSize: 22, fontWeight: "800" },
-    removeBtn: { paddingHorizontal: 8, paddingVertical: 4 },
-    removeText: { color: "#EF4444", fontWeight: "700", fontSize: 12 },
+    deleteAction: {
+        backgroundColor: "#EF4444",
+        justifyContent: "center",
+        alignItems: "center",
+        paddingHorizontal: 20,
+        borderRadius: 16,
+        marginLeft: 8,
+    },
+    deleteText: { color: "#fff", fontWeight: "800", fontSize: 14 },
 });
