@@ -19,7 +19,7 @@ export type Theme = {
 const THEMES: Record<string, Theme> = {
     Clear: {
         background: "#FFEDD5",
-        card: "#FFF7ED",
+        card: "rgba(255, 247, 237, 0.75)",
         text: "#1F2937",
         subtleText: "#4B5563",
         accent: "#F97316",
@@ -30,7 +30,7 @@ const THEMES: Record<string, Theme> = {
     },
     Rain: {
         background: "#DBEAFE",
-        card: "#EFF6FF",
+        card: "rgba(239, 246, 255, 0.75)",
         text: "#0F172A",
         subtleText: "#334155",
         accent: "#2563EB",
@@ -43,7 +43,7 @@ const THEMES: Record<string, Theme> = {
     },
     Snow: {
         background: "#F1F5F9",
-        card: "#FFFFFF",
+        card: "rgba(255, 255, 255, 0.75)",
         text: "#0F172A",
         subtleText: "#334155",
         accent: "#64748B",
@@ -56,7 +56,7 @@ const THEMES: Record<string, Theme> = {
     },
     Clouds: {
         background: "#E5E7EB",
-        card: "#F3F4F6",
+        card: "rgba(243, 244, 246, 0.75)",
         text: "#111827",
         subtleText: "#374151",
         accent: "#6B7280",
@@ -68,7 +68,7 @@ const THEMES: Record<string, Theme> = {
     },
     Thunderstorm: {
         background: "#EDE9FE",
-        card: "#F5F3FF",
+        card: "rgba(245, 243, 255, 0.75)",
         text: "#111827",
         subtleText: "#374151",
         accent: "#7C3AED",
