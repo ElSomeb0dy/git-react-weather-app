@@ -43,7 +43,7 @@ export default function CityRow({ city, weather, unit, cardColor, textColor, onO
                         {weather?.icon && (
                             <Image
                                 source={{ uri: `https://openweathermap.org/img/wn/${weather.icon}@2x.png` }}
-                                style={{ width: 36, height: 36 }}
+                                style={styles.icon}
                             />
                         )}
                         <Text style={[styles.city, { color: textColor }]}>
@@ -59,6 +59,7 @@ export default function CityRow({ city, weather, unit, cardColor, textColor, onO
 
 const styles = StyleSheet.create({
     card: { borderRadius: 16, padding: 14, flexDirection: "row", alignItems: "center" },
+    icon: { width: 36, height: 36 },
     city: { fontSize: 18, fontWeight: "800" },
     temp: { fontSize: 22, fontWeight: "800" },
     deleteAction: {

@@ -32,13 +32,6 @@ export default function WeatherDetailScreen({ route, navigation }: Props) {
         }
     };
 
-    useEffect(() => {
-        (async () => {
-            const s = await loadSettings();
-            setUnit(s.unit);
-        })();
-    }, []);
-
     useFocusEffect(
         useCallback(() => {
             (async () => {

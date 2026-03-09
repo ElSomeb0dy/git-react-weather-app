@@ -142,17 +142,12 @@ export default function HomeScreen({ navigation }: Props) {
     // Fetch weather for all cities whenever the list changes
     useEffect(() => {
         (async () => {
+            const results = await Promise.allSettled(cities.map((c) => fetchCurrentWeather(c)));
             const entries: Array<[string, CurrentWeather]> = [];
-
-            for (const c of cities) {
-                try {
-                    const w = await fetchCurrentWeather(c);
-                    entries.push([c, w]);
-                } catch (e) {
-                    console.warn("Weather fetch failed for", c, e);
-                }
-            }
-
+            results.forEach((result, i) => {
+                if (result.status === "fulfilled") entries.push([cities[i], result.value]);
+                else console.warn("Weather fetch failed for", cities[i], result.reason);
+            });
             setWeatherMap(Object.fromEntries(entries));
         })();
     }, [cities]);
