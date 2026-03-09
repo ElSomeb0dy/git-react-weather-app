@@ -1,44 +1,49 @@
 import React from "react";
 import { render, fireEvent } from "@testing-library/react-native";
 import CityRow from "../src/components/CityRow";
-import { CurrentWeather } from "../src/types/weather";
+import { mockWeather } from "./fixtures";
+
+const baseProps = {
+    city: "Paris",
+    unit: "C" as const,
+    cardColor: "#fff",
+    textColor: "#000",
+    onOpen: jest.fn(),
+    onRemove: jest.fn(),
+};
 
 describe("CityRow", () => {
-    it("renders city and loading text when no weather provided", () => {
-        const { getByText } = render(
-            <CityRow city="Paris" onOpen={() => {}} onRemove={() => {}} />
-        );
+    beforeEach(() => jest.clearAllMocks());
 
+    it("shows the raw city string when no weather is loaded yet", () => {
+        const { getByText } = render(<CityRow {...baseProps} />);
         expect(getByText("Paris")).toBeTruthy();
-        expect(getByText("Loading weather…")).toBeTruthy();
     });
 
-    it("calls onRemove when remove is pressed", () => {
-        const onRemove = jest.fn();
+    it("shows city and country from weather data once loaded", () => {
+        const { getByText } = render(<CityRow {...baseProps} weather={mockWeather} />);
+        expect(getByText("Paris, FR")).toBeTruthy();
+    });
 
-        const fakeWeather: CurrentWeather = {
-            city: "Paris",
-            country: "FR",
-            tempC: 10,
-            tempF: 50,
-            condition: "Clouds",
-            description: "overcast clouds",
-            icon: "04d",
-            humidity: 70,
-            windSpeed: 3,
-            updatedAt: Date.now(),
-        };
+    it("shows temperature in Celsius when unit is C", () => {
+        const { getByText } = render(<CityRow {...baseProps} weather={mockWeather} />);
+        expect(getByText("10°C")).toBeTruthy();
+    });
 
-        const { getByTestId } = render(
-            <CityRow
-                city="Paris"
-                weather={fakeWeather}
-                onOpen={() => {}}
-                onRemove={onRemove}
-            />
-        );
+    it("shows temperature in Fahrenheit when unit is F", () => {
+        const { getByText } = render(<CityRow {...baseProps} unit="F" weather={mockWeather} />);
+        expect(getByText("50°F")).toBeTruthy();
+    });
 
+    it("calls onOpen when the row is pressed", () => {
+        const { getByTestId } = render(<CityRow {...baseProps} weather={mockWeather} />);
+        fireEvent.press(getByTestId("city-row"));
+        expect(baseProps.onOpen).toHaveBeenCalledTimes(1);
+    });
+
+    it("calls onRemove when the swipe remove button is pressed", () => {
+        const { getByTestId } = render(<CityRow {...baseProps} weather={mockWeather} />);
         fireEvent.press(getByTestId("remove-city"));
-        expect(onRemove).toHaveBeenCalledTimes(1);
+        expect(baseProps.onRemove).toHaveBeenCalledTimes(1);
     });
 });

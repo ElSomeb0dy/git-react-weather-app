@@ -2,7 +2,6 @@ import React from "react";
 import { render, fireEvent, waitFor } from "@testing-library/react-native";
 import LoginScreen from "../src/screens/LoginScreen";
 
-// Mock supabase module used by LoginScreen
 jest.mock("../src/services/supabase", () => ({
     supabase: {
         auth: {
@@ -15,18 +14,15 @@ jest.mock("../src/services/supabase", () => ({
 
 import { supabase } from "../src/services/supabase";
 
-describe("LoginScreen (Supabase)", () => {
-    const navigation: any = { replace: jest.fn() };
+const navigation: any = { reset: jest.fn() };
 
-    beforeEach(() => {
-        jest.clearAllMocks();
-    });
+describe("LoginScreen", () => {
+    beforeEach(() => jest.clearAllMocks());
 
-    it("shows validation message for invalid email", () => {
+    it("shows validation error for invalid email", () => {
         const { getByPlaceholderText, getByText, queryByText } = render(
             <LoginScreen navigation={navigation} route={{} as any} />
         );
-
         fireEvent.changeText(getByPlaceholderText("Email"), "not-an-email");
         fireEvent.changeText(getByPlaceholderText("Password"), "123456");
         fireEvent.press(getByText("Log in"));
@@ -35,30 +31,40 @@ describe("LoginScreen (Supabase)", () => {
         expect(supabase.auth.signInWithPassword).not.toHaveBeenCalled();
     });
 
-    it("logs in and navigates to Home on success", async () => {
+    it("shows validation error for short password", () => {
+        const { getByPlaceholderText, getByText, queryByText } = render(
+            <LoginScreen navigation={navigation} route={{} as any} />
+        );
+        fireEvent.changeText(getByPlaceholderText("Email"), "test@example.com");
+        fireEvent.changeText(getByPlaceholderText("Password"), "123");
+        fireEvent.press(getByText("Log in"));
+
+        expect(queryByText("Password must be at least 6 characters.")).toBeTruthy();
+        expect(supabase.auth.signInWithPassword).not.toHaveBeenCalled();
+    });
+
+    it("navigates to Home on successful login", async () => {
         (supabase.auth.signInWithPassword as jest.Mock).mockResolvedValue({
-            data: { session: { access_token: "x" } },
+            data: { session: {} },
             error: null,
         });
 
         const { getByPlaceholderText, getByText } = render(
             <LoginScreen navigation={navigation} route={{} as any} />
         );
-
         fireEvent.changeText(getByPlaceholderText("Email"), "test@example.com");
         fireEvent.changeText(getByPlaceholderText("Password"), "123456");
         fireEvent.press(getByText("Log in"));
 
-        await waitFor(() => {
-            expect(supabase.auth.signInWithPassword).toHaveBeenCalledWith({
-                email: "test@example.com",
-                password: "123456",
-            });
-            expect(navigation.replace).toHaveBeenCalledWith("Home");
-        });
+        await waitFor(() =>
+            expect(navigation.reset).toHaveBeenCalledWith({
+                index: 0,
+                routes: [{ name: "Home" }],
+            })
+        );
     });
 
-    it('shows "Incorrect email or password." when Supabase returns invalid credentials', async () => {
+    it("shows incorrect credentials error from Supabase", async () => {
         (supabase.auth.signInWithPassword as jest.Mock).mockResolvedValue({
             data: null,
             error: { message: "Invalid login credentials" },
@@ -67,12 +73,49 @@ describe("LoginScreen (Supabase)", () => {
         const { getByPlaceholderText, getByText, findByText } = render(
             <LoginScreen navigation={navigation} route={{} as any} />
         );
-
         fireEvent.changeText(getByPlaceholderText("Email"), "test@example.com");
         fireEvent.changeText(getByPlaceholderText("Password"), "123456");
         fireEvent.press(getByText("Log in"));
 
         expect(await findByText("Incorrect email or password.")).toBeTruthy();
-        expect(navigation.replace).not.toHaveBeenCalled();
+        expect(navigation.reset).not.toHaveBeenCalled();
+    });
+
+    it("shows generic Supabase error message", async () => {
+        (supabase.auth.signInWithPassword as jest.Mock).mockResolvedValue({
+            data: null,
+            error: { message: "Too many requests" },
+        });
+
+        const { getByPlaceholderText, getByText, findByText } = render(
+            <LoginScreen navigation={navigation} route={{} as any} />
+        );
+        fireEvent.changeText(getByPlaceholderText("Email"), "test@example.com");
+        fireEvent.changeText(getByPlaceholderText("Password"), "123456");
+        fireEvent.press(getByText("Log in"));
+
+        expect(await findByText("Too many requests")).toBeTruthy();
+    });
+
+    it("shows success message after account creation", async () => {
+        (supabase.auth.signUp as jest.Mock).mockResolvedValue({ error: null });
+
+        const { getByPlaceholderText, getByText, findByText } = render(
+            <LoginScreen navigation={navigation} route={{} as any} />
+        );
+        fireEvent.changeText(getByPlaceholderText("Email"), "new@example.com");
+        fireEvent.changeText(getByPlaceholderText("Password"), "123456");
+        fireEvent.press(getByText("Create account"));
+
+        expect(await findByText("Account created. You can now log in.")).toBeTruthy();
+    });
+
+    it("shows error when forgot password is pressed without email", () => {
+        const { getByText, queryByText } = render(
+            <LoginScreen navigation={navigation} route={{} as any} />
+        );
+        fireEvent.press(getByText("Forgot password?"));
+
+        expect(queryByText("Enter your email first, then tap Forgot password.")).toBeTruthy();
     });
 });
