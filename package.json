@@ -8,7 +8,8 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "test": "jest",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
   },
   "jest": {
     "preset": "jest-expo",
@@ -16,8 +17,30 @@
       "<rootDir>/jest.setup.ts"
     ],
     "transformIgnorePatterns": [
-      "node_modules/(?!((jest-)?react-native|rea/ct-native|@react-native|@react-navigation|expo(nent)?|@expo(nent)?|expo-modules-core|@unimodules|unimodules|sentry-expo|native-base|react-native-svg)/)"
-    ]
+      "node_modules/(?!((jest-)?react-native|@react-native|@react-navigation|expo(nent)?|@expo(nent)?|expo-modules-core|@unimodules|unimodules|sentry-expo|native-base|react-native-svg|react-native-gesture-handler|react-native-reanimated|react-native-worklets)/)"
+    ],
+    "testPathIgnorePatterns": [
+      "<rootDir>/node_modules/",
+      "<rootDir>/__tests__/fixtures.ts"
+    ],
+    "collectCoverageFrom": [
+      "src/services/**/*.{ts,tsx}",
+      "src/hooks/**/*.{ts,tsx}",
+      "src/storage/**/*.{ts,tsx}",
+      "src/utils/**/*.{ts,tsx}",
+      "src/theme/**/*.{ts,tsx}",
+      "src/components/**/*.{ts,tsx}",
+      "src/screens/LoginScreen.tsx",
+      "!src/services/supabase.ts",
+      "!src/components/ThemeBackground.tsx"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "lines": 80,
+        "functions": 80,
+        "branches": 70
+      }
+    }
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "2.2.0",
