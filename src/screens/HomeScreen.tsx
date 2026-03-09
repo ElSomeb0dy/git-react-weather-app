@@ -58,6 +58,12 @@ export default function HomeScreen({ navigation }: Props) {
     const showSuccess = (text: string) => setStatus({ type: "success", text });
     const clearStatus = () => setStatus(null);
 
+    useEffect(() => {
+        if (!status) return;
+        const t = setTimeout(clearStatus, 3000);
+        return () => clearTimeout(t);
+    }, [status]);
+
     // Current location weather
     const [locationWeather, setLocationWeather] = useState<CurrentWeather | null>(null);
 
