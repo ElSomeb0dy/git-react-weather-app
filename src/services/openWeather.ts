@@ -1,4 +1,3 @@
-// src/services/openWeather.ts
 import Constants from "expo-constants";
 import { CurrentWeather, WeatherCondition } from "../types/weather";
 
@@ -11,7 +10,7 @@ const kelvinToC = (k: number) => k - 273.15;
 const cToF = (c: number) => (c * 9) / 5 + 32;
 
 export type CitySuggestion = {
-    label: string; // e.g. "Paris, Île-de-France, FR"
+    label: string;
     name: string;
     country: string;
     state?: string;
@@ -29,7 +28,6 @@ export async function fetchCitySuggestions(query: string, limit = 6): Promise<Ci
     const data = await res.json();
     if (!Array.isArray(data)) return [];
 
-    // Build suggestions
     const raw: CitySuggestion[] = data.map((x: any) => {
         const parts = [x.name, x.state, x.country].filter(Boolean);
         return {
@@ -42,7 +40,6 @@ export async function fetchCitySuggestions(query: string, limit = 6): Promise<Ci
         };
     });
 
-    // Dedupe: prefer first occurrence of each label, and also avoid repeated lat/lon
     const seenLabel = new Set<string>();
     const seenCoord = new Set<string>();
     const out: CitySuggestion[] = [];
@@ -70,8 +67,11 @@ export async function fetchCurrentWeatherByCoords(lat: number, lon: number): Pro
     }
 
     const data = await res.json();
+
     const c = kelvinToC(data.main.temp);
     const fl = kelvinToC(data.main.feels_like);
+    const min = kelvinToC(data.main.temp_min);
+    const max = kelvinToC(data.main.temp_max);
     const condition = (data.weather?.[0]?.main ?? "Clouds") as WeatherCondition;
 
     return {
@@ -80,12 +80,20 @@ export async function fetchCurrentWeatherByCoords(lat: number, lon: number): Pro
         tempC: Math.round(c * 10) / 10,
         tempF: Math.round(cToF(c) * 10) / 10,
         condition,
-        description: (data.weather?.[0]?.description ?? "").replace(/\b\w/g, (c: string) => c.toUpperCase()),
+        description: (data.weather?.[0]?.description ?? "").replace(/\b\w/g, (ch: string) => ch.toUpperCase()),
         icon: data.weather?.[0]?.icon ?? "01d",
         humidity: data.main.humidity,
         windSpeed: data.wind.speed,
         feelsLikeC: Math.round(fl * 10) / 10,
         feelsLikeF: Math.round(cToF(fl) * 10) / 10,
+        minTempC: Math.round(min * 10) / 10,
+        minTempF: Math.round(cToF(min) * 10) / 10,
+        maxTempC: Math.round(max * 10) / 10,
+        maxTempF: Math.round(cToF(max) * 10) / 10,
+        pressure: data.main.pressure,
+        visibility: data.visibility ?? 0,
+        sunrise: data.sys.sunrise ? data.sys.sunrise * 1000 : null,
+        sunset: data.sys.sunset ? data.sys.sunset * 1000 : null,
         updatedAt: Date.now(),
     };
 }
@@ -103,6 +111,8 @@ export async function fetchCurrentWeather(city: string): Promise<CurrentWeather>
 
     const c = kelvinToC(data.main.temp);
     const fl = kelvinToC(data.main.feels_like);
+    const min = kelvinToC(data.main.temp_min);
+    const max = kelvinToC(data.main.temp_max);
     const condition = (data.weather?.[0]?.main ?? "Clouds") as WeatherCondition;
 
     return {
@@ -111,12 +121,20 @@ export async function fetchCurrentWeather(city: string): Promise<CurrentWeather>
         tempC: Math.round(c * 10) / 10,
         tempF: Math.round(cToF(c) * 10) / 10,
         condition,
-        description: (data.weather?.[0]?.description ?? "").replace(/\b\w/g, (c: string) => c.toUpperCase()),
+        description: (data.weather?.[0]?.description ?? "").replace(/\b\w/g, (ch: string) => ch.toUpperCase()),
         icon: data.weather?.[0]?.icon ?? "01d",
         humidity: data.main.humidity,
         windSpeed: data.wind.speed,
         feelsLikeC: Math.round(fl * 10) / 10,
         feelsLikeF: Math.round(cToF(fl) * 10) / 10,
+        minTempC: Math.round(min * 10) / 10,
+        minTempF: Math.round(cToF(min) * 10) / 10,
+        maxTempC: Math.round(max * 10) / 10,
+        maxTempF: Math.round(cToF(max) * 10) / 10,
+        pressure: data.main.pressure,
+        visibility: data.visibility ?? 0,
+        sunrise: data.sys.sunrise ? data.sys.sunrise * 1000 : null,
+        sunset: data.sys.sunset ? data.sys.sunset * 1000 : null,
         updatedAt: Date.now(),
     };
 }

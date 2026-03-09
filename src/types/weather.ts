@@ -1,9 +1,7 @@
 export type WeatherCondition =
-    | "Clear"
-    | "Clouds"
-    | "Rain"
-    | "Drizzle"
     | "Thunderstorm"
+    | "Drizzle"
+    | "Rain"
     | "Snow"
     | "Mist"
     | "Smoke"
@@ -13,19 +11,29 @@ export type WeatherCondition =
     | "Sand"
     | "Ash"
     | "Squall"
-    | "Tornado";
+    | "Tornado"
+    | "Clear"
+    | "Clouds";
 
 export type CurrentWeather = {
     city: string;
     country: string;
     tempC: number;
     tempF: number;
+    feelsLikeC: number;
+    feelsLikeF: number;
+    minTempC: number;
+    minTempF: number;
+    maxTempC: number;
+    maxTempF: number;
     condition: WeatherCondition;
     description: string;
     icon: string;
     humidity: number;
     windSpeed: number;
-    feelsLikeC: number;
-    feelsLikeF: number;
-    updatedAt: number; // epoch ms
+    pressure: number;
+    visibility: number;
+    sunrise: number | null;
+    sunset: number | null;
+    updatedAt: number;
 };

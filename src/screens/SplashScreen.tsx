@@ -29,7 +29,6 @@ export default function SplashScreen({ navigation }: Props) {
         };
     }, [navigation]);
 
-    // Simple loading splash
     return (
         <View style={styles.container}>
             <Text style={styles.title}>React Weather</Text>

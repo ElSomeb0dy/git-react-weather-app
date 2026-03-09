@@ -1,6 +1,7 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { View, Text, StyleSheet, ActivityIndicator, Image, Pressable } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { useFocusEffect } from "@react-navigation/native";
 import { RootStackParamList } from "../navigation/types";
 import { fetchCurrentWeather } from "../services/openWeather";
 import { CurrentWeather } from "../types/weather";
@@ -15,31 +16,22 @@ type Props = NativeStackScreenProps<RootStackParamList, "WeatherDetail">;
 export default function WeatherDetailScreen({ route, navigation }: Props) {
     const insets = useSafeAreaInsets();
     const { city } = route.params;
-
-    // Current weather data for this city
     const [weather, setWeather] = useState<CurrentWeather | null>(null);
-
-    // Temperature unit preference (C or F), loaded from Settings
     const [unit, setUnit] = useState<"C" | "F">("C");
-
-    // Loading state for the weather request
     const [loading, setLoading] = useState(true);
 
-    //Loads weather for the current city when screen loads or "Retry" tapped.
     const loadWeather = async () => {
         setLoading(true);
         try {
             const w = await fetchCurrentWeather(city);
             setWeather(w);
         } catch {
-            // If the request fails (network, API error, etc.), show the failure UI
             setWeather(null);
         } finally {
             setLoading(false);
         }
     };
 
-    // Load user settings (unit) once when the screen mounts
     useEffect(() => {
         (async () => {
             const s = await loadSettings();
@@ -47,17 +39,23 @@ export default function WeatherDetailScreen({ route, navigation }: Props) {
         })();
     }, []);
 
-    // Fetch weather whenever the city changes (including first mount)
+    useFocusEffect(
+        useCallback(() => {
+            (async () => {
+                const s = await loadSettings();
+                setUnit(s.unit);
+            })();
+        }, [])
+    );
+
     useEffect(() => {
         loadWeather();
     }, [city]);
 
-    // Decide colors for the screen based on the weather condition
     const theme = useMemo(() => {
         return themeForCondition(weather?.condition ?? "Clouds");
     }, [weather]);
 
-    // Loading UI while fetching
     if (loading) {
         return (
             <View style={[styles.center, { backgroundColor: "#fff" }]}>
@@ -66,8 +64,6 @@ export default function WeatherDetailScreen({ route, navigation }: Props) {
         );
     }
 
-    // Failure UI when the weather request fails
-    // The Retry button calls loadWeather() again to re-attempt the request.
     if (!weather) {
         return (
             <View style={[styles.center, { padding: 16 }]}>
@@ -80,10 +76,17 @@ export default function WeatherDetailScreen({ route, navigation }: Props) {
         );
     }
 
-    // Display temperature in user's chosen unit
     const temp = unit === "C" ? `${weather.tempC}°C` : `${weather.tempF}°F`;
+    const feelsLike = unit === "C" ? `${weather.feelsLikeC}°C` : `${weather.feelsLikeF}°F`;
+    const minTemp = unit === "C" ? `${weather.minTempC}°C` : `${weather.minTempF}°F`;
+    const maxTemp = unit === "C" ? `${weather.maxTempC}°C` : `${weather.maxTempF}°F`;
 
     const iconUrl = `https://openweathermap.org/img/wn/${weather.icon}@2x.png`;
+
+    const formatTime = (value: number | null) =>
+        value ? new Date(value).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "--";
+
+    const visibilityKm = (weather.visibility / 1000).toFixed(1);
 
     return (
         <View style={[styles.container, { backgroundColor: theme.background }]}>
@@ -97,39 +100,70 @@ export default function WeatherDetailScreen({ route, navigation }: Props) {
                 <Ionicons name="chevron-back" size={26} color={theme.accent} />
             </Pressable>
 
-            <View style={[styles.card, { backgroundColor: theme.card }]}>
-                <Text style={[styles.title, { color: theme.text }]}>
-                    {weather.city}, {weather.country}
-                </Text>
+            <View style={styles.content}>
+                <View style={[styles.card, { backgroundColor: theme.card }]}>
+                    <Text style={[styles.title, { color: theme.text }]}>
+                        {weather.city}, {weather.country}
+                    </Text>
 
-                <View style={styles.centerRow}>
-                    <Image source={{ uri: iconUrl }} style={{ width: 64, height: 64 }} />
-                    <Text style={[styles.temp, { color: theme.text }]}>{temp}</Text>
+                    <View style={styles.centerRow}>
+                        <Image source={{ uri: iconUrl }} style={{ width: 64, height: 64 }} />
+                        <Text style={[styles.temp, { color: theme.text }]}>{temp}</Text>
+                    </View>
+
+                    <Text style={[styles.description, { color: theme.subtleText }]}>
+                        {weather.description}
+                    </Text>
+
+                    <View style={styles.statsRow}>
+                        <View style={styles.statItem}>
+                            <Text style={[styles.statLabel, { color: theme.subtleText }]}>Feels Like</Text>
+                            <Text style={[styles.statValue, { color: theme.text }]}>{feelsLike}</Text>
+                        </View>
+                        <View style={styles.statItem}>
+                            <Text style={[styles.statLabel, { color: theme.subtleText }]}>Humidity</Text>
+                            <Text style={[styles.statValue, { color: theme.text }]}>{weather.humidity}%</Text>
+                        </View>
+                        <View style={styles.statItem}>
+                            <Text style={[styles.statLabel, { color: theme.subtleText }]}>Wind</Text>
+                            <Text style={[styles.statValue, { color: theme.text }]}>{weather.windSpeed} m/s</Text>
+                        </View>
+                    </View>
+
+                    <View style={styles.statsRow}>
+                        <View style={styles.statItem}>
+                            <Text style={[styles.statLabel, { color: theme.subtleText }]}>Min</Text>
+                            <Text style={[styles.statValue, { color: theme.text }]}>{minTemp}</Text>
+                        </View>
+                        <View style={styles.statItem}>
+                            <Text style={[styles.statLabel, { color: theme.subtleText }]}>Max</Text>
+                            <Text style={[styles.statValue, { color: theme.text }]}>{maxTemp}</Text>
+                        </View>
+                        <View style={styles.statItem}>
+                            <Text style={[styles.statLabel, { color: theme.subtleText }]}>Pressure</Text>
+                            <Text style={[styles.statValue, { color: theme.text }]}>{weather.pressure} hPa</Text>
+                        </View>
+                    </View>
+
+                    <View style={styles.statsRow}>
+                        <View style={styles.statItem}>
+                            <Text style={[styles.statLabel, { color: theme.subtleText }]}>Visibility</Text>
+                            <Text style={[styles.statValue, { color: theme.text }]}>{visibilityKm} km</Text>
+                        </View>
+                        <View style={styles.statItem}>
+                            <Text style={[styles.statLabel, { color: theme.subtleText }]}>Sunrise</Text>
+                            <Text style={[styles.statValue, { color: theme.text }]}>{formatTime(weather.sunrise)}</Text>
+                        </View>
+                        <View style={styles.statItem}>
+                            <Text style={[styles.statLabel, { color: theme.subtleText }]}>Sunset</Text>
+                            <Text style={[styles.statValue, { color: theme.text }]}>{formatTime(weather.sunset)}</Text>
+                        </View>
+                    </View>
+
+                    <Text style={[styles.updatedText, { color: theme.subtleText }]}>
+                        Updated: {new Date(weather.updatedAt).toLocaleString()}
+                    </Text>
                 </View>
-
-                <Text style={[styles.description, { color: theme.subtleText }]}>{weather.description}</Text>
-
-                <View style={styles.statsRow}>
-                    <View style={styles.statItem}>
-                        <Text style={[styles.statLabel, { color: theme.subtleText }]}>Feels Like</Text>
-                        <Text style={[styles.statValue, { color: theme.text }]}>
-                            {unit === "C" ? `${weather.feelsLikeC}°C` : `${weather.feelsLikeF}°F`}
-                        </Text>
-                    </View>
-                    <View style={styles.statItem}>
-                        <Text style={[styles.statLabel, { color: theme.subtleText }]}>Humidity</Text>
-                        <Text style={[styles.statValue, { color: theme.text }]}>{weather.humidity}%</Text>
-                    </View>
-                    <View style={styles.statItem}>
-                        <Text style={[styles.statLabel, { color: theme.subtleText }]}>Wind</Text>
-                        <Text style={[styles.statValue, { color: theme.text }]}>{weather.windSpeed} m/s</Text>
-                    </View>
-                </View>
-
-                <Text style={{ marginTop: 10, color: theme.subtleText, fontSize: 11, textAlign: "center" }}>
-                    Updated: {new Date(weather.updatedAt).toLocaleString()}
-                </Text>
-
             </View>
         </View>
     );
@@ -137,19 +171,50 @@ export default function WeatherDetailScreen({ route, navigation }: Props) {
 
 const styles = StyleSheet.create({
     center: { flex: 1, alignItems: "center", justifyContent: "center" },
-    container: { flex: 1, padding: 16, justifyContent: "center" },
-    card: { borderRadius: 18, padding: 16 },
+    container: { flex: 1, padding: 16 },
+
+    content: {
+        flex: 1,
+        justifyContent: "center",
+    },
+
+    card: {
+        borderRadius: 18,
+        padding: 18,
+        marginHorizontal: 4,
+    },
+
     title: { fontSize: 22, fontWeight: "900", textAlign: "center" },
-    row: { flexDirection: "row", alignItems: "center", gap: 10, marginTop: 10 },
     temp: { fontSize: 38, fontWeight: "900" },
-    settingsBtn: { marginTop: 14, padding: 12, borderRadius: 12 },
+
     retryBtn: { marginTop: 12, backgroundColor: "#111827", padding: 12, borderRadius: 12 },
     retryText: { color: "white", fontWeight: "800" },
+
     backBtn: { position: "absolute", left: 12, zIndex: 10, padding: 4 },
-    centerRow: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 10 },
+
+    centerRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 8,
+        marginTop: 10,
+    },
+
     description: { textAlign: "center", marginTop: 4, fontSize: 14 },
-    statsRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 16 },
+
+    statsRow: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        marginTop: 18,
+    },
+
     statItem: { flex: 1, alignItems: "center" },
     statLabel: { fontSize: 11, fontWeight: "600", opacity: 0.7, marginBottom: 2 },
-    statValue: { fontSize: 15, fontWeight: "800" },
+    statValue: { fontSize: 15, fontWeight: "800", textAlign: "center" },
+
+    updatedText: {
+        marginTop: 18,
+        fontSize: 11,
+        textAlign: "center",
+    },
 });
