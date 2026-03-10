@@ -6,6 +6,7 @@ import SplashScreen from "../screens/SplashScreen";
 import LoginScreen from "../screens/LoginScreen";
 import HomeScreen from "../screens/HomeScreen";
 import WeatherDetailScreen from "../screens/WeatherDetailScreen";
+import ForecastScreen from "../screens/ForecastScreen";
 import SettingsScreen from "../screens/SettingsScreen";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -17,6 +18,7 @@ export default function RootNavigator() {
             <Stack.Screen name="Login" component={LoginScreen} options={{ title: "Login" }} />
             <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
             <Stack.Screen name="WeatherDetail" component={WeatherDetailScreen} options={{ headerShown: false }} />
+            <Stack.Screen name="Forecast" component={ForecastScreen} options={{ headerShown: false }} />
             <Stack.Screen name="Settings" component={SettingsScreen} options={{ headerShown: false }} />
         </Stack.Navigator>
     );

@@ -9,10 +9,11 @@ import {
     fetchCurrentWeather,
     fetchCurrentWeatherByCoords,
     fetchCitySuggestions,
+    fetchNextSlots,
     CitySuggestion,
 } from "../services/openWeather";
 import * as Location from "expo-location";
-import { CurrentWeather } from "../types/weather";
+import { CurrentWeather, ForecastSlot } from "../types/weather";
 import { tempColor } from "../utils/tempColor";
 import { themeForCondition } from "../theme/weatherTheme";
 import CityRow from "../components/CityRow";
@@ -25,6 +26,8 @@ import {
     Pressable,
     StyleSheet,
     FlatList,
+    ScrollView,
+    Image,
     ActivityIndicator,
     Alert,
 } from "react-native";
@@ -66,6 +69,7 @@ export default function HomeScreen({ navigation }: Props) {
 
     // Current location weather
     const [locationWeather, setLocationWeather] = useState<CurrentWeather | null>(null);
+    const [locationSlots, setLocationSlots] = useState<ForecastSlot[]>([]);
 
     useEffect(() => {
         (async () => {
@@ -75,6 +79,8 @@ export default function HomeScreen({ navigation }: Props) {
             try {
                 const w = await fetchCurrentWeatherByCoords(loc.coords.latitude, loc.coords.longitude);
                 setLocationWeather(w);
+                const slots = await fetchNextSlots(w.city);
+                setLocationSlots(slots);
             } catch (e) {
                 console.warn("Location weather failed", e);
             }
@@ -247,6 +253,40 @@ export default function HomeScreen({ navigation }: Props) {
                     <Text style={[styles.locationFeelsLike, { color: activeTheme.text }]}>
                         H: {locationWeather.humidity}%{"   "}W: {locationWeather.windSpeed} m/s
                     </Text>
+
+                    {locationSlots.length > 0 && (
+                        <ScrollView
+                            horizontal
+                            showsHorizontalScrollIndicator={false}
+                            style={styles.slotsScroll}
+                            contentContainerStyle={styles.slotsContent}
+                        >
+                            {locationSlots.map((slot) => (
+                                <View key={slot.time} style={[styles.slotCard, { backgroundColor: activeTheme.background }]}>
+                                    <Text style={[styles.slotTime, { color: activeTheme.subtleText }]}>
+                                        {new Date(slot.time).toLocaleTimeString([], { hour: "numeric", hour12: true })}
+                                    </Text>
+                                    <Image
+                                        source={{ uri: `https://openweathermap.org/img/wn/${slot.icon}.png` }}
+                                        style={styles.slotIcon}
+                                    />
+                                    <Text style={[styles.slotTemp, { color: activeTheme.text }]}>
+                                        {unit === "C" ? `${slot.tempC}°` : `${slot.tempF}°`}
+                                    </Text>
+                                </View>
+                            ))}
+                        </ScrollView>
+                    )}
+
+                    <Pressable
+                        style={[styles.forecastBtn, { backgroundColor: activeTheme.accent }]}
+                        onPress={() => navigation.navigate("Forecast", {
+                            city: locationWeather.city,
+                            condition: locationWeather.condition,
+                        })}
+                    >
+                        <Text style={styles.forecastBtnText}>5-Day Forecast</Text>
+                    </Pressable>
                 </View>
             )}
 
@@ -390,4 +430,26 @@ h2: { fontSize: 20, fontWeight: "800" },
         marginBottom: 14,
     },
     greeting: { fontSize: 22, fontWeight: "800" },
+
+    slotsScroll: { marginTop: 12, width: "100%" },
+    slotsContent: { gap: 8, paddingHorizontal: 2 },
+    slotCard: {
+        alignItems: "center",
+        borderRadius: 12,
+        paddingVertical: 8,
+        paddingHorizontal: 10,
+        minWidth: 60,
+    },
+    slotTime: { fontSize: 11, fontWeight: "600" },
+    slotIcon: { width: 36, height: 36 },
+    slotTemp: { fontSize: 13, fontWeight: "800" },
+
+    forecastBtn: {
+        marginTop: 12,
+        width: "100%",
+        padding: 10,
+        borderRadius: 12,
+        alignItems: "center",
+    },
+    forecastBtnText: { color: "white", fontWeight: "800", fontSize: 13 },
 });
