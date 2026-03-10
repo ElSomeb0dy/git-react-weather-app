@@ -18,10 +18,8 @@ export function useWeather(city: string) {
 
             try {
                 const w = await fetchCurrentWeather(city);
-                // Only update state if the component is still active
                 if (alive) setData(w);
             } catch (e: any) {
-                // Surface API errors to the UI
                 if (alive) setError(e?.message ?? "Unknown error");
             } finally {
                 // Ensure loading indicator is always toggled off
@@ -29,7 +27,6 @@ export function useWeather(city: string) {
             }
         })();
 
-        // Cleanup
         return () => {
             alive = false;
         };
