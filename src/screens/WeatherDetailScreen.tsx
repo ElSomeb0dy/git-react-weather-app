@@ -4,6 +4,7 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useFocusEffect } from "@react-navigation/native";
 import { RootStackParamList } from "../navigation/types";
 import { fetchCurrentWeather } from "../services/openWeather";
+import { formatTemp, weatherIconUrl } from "../utils/format";
 import { CurrentWeather } from "../types/weather";
 import { themeForCondition } from "../theme/weatherTheme";
 import { loadSettings } from "../storage/settings";
@@ -12,6 +13,9 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 
 type Props = NativeStackScreenProps<RootStackParamList, "WeatherDetail">;
+
+const formatTime = (value: number | null) =>
+    value ? new Date(value).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "--";
 
 export default function WeatherDetailScreen({ route, navigation }: Props) {
     const insets = useSafeAreaInsets();
@@ -34,10 +38,9 @@ export default function WeatherDetailScreen({ route, navigation }: Props) {
 
     useFocusEffect(
         useCallback(() => {
-            (async () => {
-                const s = await loadSettings();
-                setUnit(s.unit);
-            })();
+            loadSettings()
+                .then((s) => setUnit(s.unit))
+                .catch(() => {});
         }, [])
     );
 
@@ -69,15 +72,12 @@ export default function WeatherDetailScreen({ route, navigation }: Props) {
         );
     }
 
-    const temp = unit === "C" ? `${weather.tempC}°C` : `${weather.tempF}°F`;
-    const feelsLike = unit === "C" ? `${weather.feelsLikeC}°C` : `${weather.feelsLikeF}°F`;
-    const minTemp = unit === "C" ? `${weather.minTempC}°C` : `${weather.minTempF}°F`;
-    const maxTemp = unit === "C" ? `${weather.maxTempC}°C` : `${weather.maxTempF}°F`;
+    const temp = formatTemp(weather.tempC, weather.tempF, unit);
+    const feelsLike = formatTemp(weather.feelsLikeC, weather.feelsLikeF, unit);
+    const minTemp = formatTemp(weather.minTempC, weather.minTempF, unit);
+    const maxTemp = formatTemp(weather.maxTempC, weather.maxTempF, unit);
 
-    const iconUrl = `https://openweathermap.org/img/wn/${weather.icon}@2x.png`;
-
-    const formatTime = (value: number | null) =>
-        value ? new Date(value).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "--";
+    const iconUrl = weatherIconUrl(weather.icon);
 
     const visibilityKm = (weather.visibility / 1000).toFixed(1);
 
@@ -100,7 +100,7 @@ export default function WeatherDetailScreen({ route, navigation }: Props) {
                     </Text>
 
                     <View style={styles.centerRow}>
-                        <Image source={{ uri: iconUrl }} style={{ width: 64, height: 64 }} />
+                        <Image source={{ uri: iconUrl }} style={styles.icon} />
                         <Text style={[styles.temp, { color: theme.text }]}>{temp}</Text>
                     </View>
 
@@ -210,4 +210,5 @@ const styles = StyleSheet.create({
         fontSize: 11,
         textAlign: "center",
     },
+    icon: { width: 64, height: 64 },
 });

@@ -1,10 +1,10 @@
-// src/components/CityRow.tsx
 import React, { useRef } from "react";
 import { Pressable, Text, View, StyleSheet, Image } from "react-native";
 import ReanimatedSwipeable, { SwipeableMethods } from "react-native-gesture-handler/ReanimatedSwipeable";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { CurrentWeather } from "../types/weather";
 import { tempColor } from "../utils/tempColor";
+import { formatTemp, weatherIconUrl } from "../utils/format";
 
 type Props = {
     city: string;
@@ -18,9 +18,7 @@ type Props = {
 
 export default function CityRow({ city, weather, unit, cardColor, textColor, onOpen, onRemove }: Props) {
     const swipeableRef = useRef<SwipeableMethods>(null);
-    const temp = weather
-        ? unit === "C" ? `${weather.tempC}°C` : `${weather.tempF}°F`
-        : null;
+    const temp = weather ? formatTemp(weather.tempC, weather.tempF, unit) : null;
 
     const renderRightActions = () => (
         <Pressable
@@ -42,7 +40,7 @@ export default function CityRow({ city, weather, unit, cardColor, textColor, onO
                     <View style={{ flex: 1, flexDirection: "row", alignItems: "center", gap: 6 }}>
                         {weather?.icon && (
                             <Image
-                                source={{ uri: `https://openweathermap.org/img/wn/${weather.icon}@2x.png` }}
+                                source={{ uri: weatherIconUrl(weather.icon) }}
                                 style={styles.icon}
                             />
                         )}

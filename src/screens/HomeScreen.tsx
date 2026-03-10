@@ -14,6 +14,7 @@ import {
 import * as Location from "expo-location";
 import { CurrentWeather } from "../types/weather";
 import { tempColor } from "../utils/tempColor";
+import { formatTemp } from "../utils/format";
 import { themeForCondition } from "../theme/weatherTheme";
 import CityRow from "../components/CityRow";
 import { supabase } from "../services/supabase";
@@ -89,6 +90,7 @@ export default function HomeScreen({ navigation }: Props) {
     const [suggestions, setSuggestions] = useState<CitySuggestion[]>([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
     const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    useEffect(() => () => { if (debounceRef.current) clearTimeout(debounceRef.current); }, []);
 
     // Pick first city's weather as the global screen theme
     const activeTheme = useMemo(() => {
@@ -96,21 +98,10 @@ export default function HomeScreen({ navigation }: Props) {
         return first ? themeForCondition(first.condition) : themeForCondition("Clouds");
     }, [cities, weatherMap]);
 
-    // Load unit on mount
-    useEffect(() => {
-        (async () => {
-            const s = await loadSettings();
-            setUnit(s.unit);
-        })();
-    }, []);
-
-    // Reload unit whenever Home becomes focused (coming back from Settings)
+    // Load unit on focus (also runs on mount, so no separate useEffect needed)
     useFocusEffect(
         useCallback(() => {
-            (async () => {
-                const s = await loadSettings();
-                setUnit(s.unit);
-            })();
+            loadSettings().then((s) => setUnit(s.unit));
         }, [])
     );
 
@@ -239,10 +230,10 @@ export default function HomeScreen({ navigation }: Props) {
                         {locationWeather.city}, {locationWeather.country}
                     </Text>
                     <Text style={[styles.locationTemp, { color: tempColor(locationWeather.tempC) }]}>
-                        {unit === "C" ? `${locationWeather.tempC}°C` : `${locationWeather.tempF}°F`}
+                        {formatTemp(locationWeather.tempC, locationWeather.tempF, unit)}
                     </Text>
                     <Text style={[styles.locationFeelsLike, { color: activeTheme.text }]}>
-                        Feels Like: {unit === "C" ? `${locationWeather.feelsLikeC}°C` : `${locationWeather.feelsLikeF}°F`}
+                        Feels Like: {formatTemp(locationWeather.feelsLikeC, locationWeather.feelsLikeF, unit)}
                     </Text>
                     <Text style={[styles.locationFeelsLike, { color: activeTheme.text }]}>
                         H: {locationWeather.humidity}%{"   "}W: {locationWeather.windSpeed} m/s
@@ -354,7 +345,7 @@ const styles = StyleSheet.create({
     input: { flex: 1, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 12 },
     addBtn: { paddingHorizontal: 16, borderRadius: 12, alignItems: "center", justifyContent: "center" },
     addBtnText: { color: "white", fontWeight: "800" },
-h2: { fontSize: 20, fontWeight: "800" },
+    h2: { fontSize: 20, fontWeight: "800" },
     link: { fontWeight: "800" },
 
     status: { marginTop: 10, textAlign: "center", fontWeight: "800" },
