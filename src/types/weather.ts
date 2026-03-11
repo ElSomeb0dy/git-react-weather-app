@@ -15,6 +15,24 @@ export type WeatherCondition =
     | "Clear"
     | "Clouds";
 
+export type ForecastSlot = {
+    time: number;
+    tempC: number;
+    tempF: number;
+    icon: string;
+};
+
+export type ForecastDay = {
+    date: number;
+    minTempC: number;
+    maxTempC: number;
+    minTempF: number;
+    maxTempF: number;
+    condition: WeatherCondition;
+    description: string;
+    icon: string;
+};
+
 export type CurrentWeather = {
     city: string;
     country: string;

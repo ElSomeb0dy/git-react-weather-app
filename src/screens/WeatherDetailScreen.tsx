@@ -108,6 +108,18 @@ export default function WeatherDetailScreen({ route, navigation }: Props) {
                         {weather.description}
                     </Text>
 
+                    <Pressable
+                        style={[styles.forecastBtn, { backgroundColor: theme.accent }]}
+                        onPress={() =>
+                            navigation.navigate("Forecast", {
+                                city: weather.city,
+                                condition: weather.condition,
+                            })
+                        }
+                    >
+                        <Text style={styles.forecastBtnText}>5-Day Forecast</Text>
+                    </Pressable>
+
                     <View style={styles.statsRow}>
                         <View style={styles.statItem}>
                             <Text style={[styles.statLabel, { color: theme.subtleText }]}>Feels Like</Text>
@@ -210,5 +222,12 @@ const styles = StyleSheet.create({
         fontSize: 11,
         textAlign: "center",
     },
+    forecastBtn: {
+        marginTop: 16,
+        padding: 12,
+        borderRadius: 12,
+        alignItems: "center",
+    },
+    forecastBtnText: { color: "white", fontWeight: "800", fontSize: 14 },
     icon: { width: 64, height: 64 },
 });
