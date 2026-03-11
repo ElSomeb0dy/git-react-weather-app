@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, Pressable, ScrollView } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation/types";
 import { loadSettings, saveSettings, Settings, HomeThemeMode } from "../storage/settings";
-import { supabase } from "../services/supabase";
+import { signOut } from "../services/auth";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { themeForCondition } from "../theme/weatherTheme";
@@ -44,7 +44,7 @@ export default function SettingsScreen({ route, navigation }: Props) {
     };
 
     const logout = async () => {
-        await supabase.auth.signOut();
+        await signOut();
         navigation.reset({ index: 0, routes: [{ name: "Login" }] });
     };
 

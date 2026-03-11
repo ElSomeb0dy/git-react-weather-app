@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { View, Text, ActivityIndicator, StyleSheet } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation/types";
-import { supabase } from "../services/supabase";
+import { getSession, onAuthStateChange } from "../services/auth";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Splash">;
 
@@ -14,12 +14,12 @@ export default function SplashScreen({ navigation }: Props) {
         let mounted = true;
 
         (async () => {
-            const { data } = await supabase.auth.getSession();
+            const { data } = await getSession();
             if (!mounted) return;
             navigation.replace(data.session ? "Home" : "Login");
         })();
 
-        const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+        const { data: sub } = onAuthStateChange((_event, session) => {
             navigation.replace(session ? "Home" : "Login");
         });
 

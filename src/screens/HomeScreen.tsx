@@ -17,7 +17,7 @@ import { tempColor } from "../utils/tempColor";
 import { formatTemp } from "../utils/format";
 import { themeForCondition } from "../theme/weatherTheme";
 import CityRow from "../components/CityRow";
-import { supabase } from "../services/supabase";
+import { getCities, insertCity, deleteCity } from "../services/cities";
 import { loadSettings, HomeThemeMode } from "../storage/settings";
 import {
     View,
@@ -32,9 +32,6 @@ import {
 
 type Props = NativeStackScreenProps<RootStackParamList, "Home">;
 
-type CityRowDb = {
-    city: string;
-};
 
 function getGreeting(): string {
     const h = new Date().getHours();
@@ -124,11 +121,7 @@ export default function HomeScreen({ navigation }: Props) {
         (async () => {
             setLoading(true);
 
-            const { data, error } = await supabase
-                .from("user_cities")
-                .select("city")
-                .order("created_at", { ascending: false })
-                .returns<CityRowDb[]>();
+            const { data, error } = await getCities();
 
             if (error) {
                 console.warn(error);
@@ -185,7 +178,7 @@ export default function HomeScreen({ navigation }: Props) {
             return;
         }
 
-        const { error } = await supabase.from("user_cities").insert({ city });
+        const { error } = await insertCity(city);
 
         if (error) {
             console.warn(error);
@@ -204,7 +197,7 @@ export default function HomeScreen({ navigation }: Props) {
     };
 
     const removeCity = async (city: string) => {
-        const { error } = await supabase.from("user_cities").delete().eq("city", city);
+        const { error } = await deleteCity(city);
 
         if (error) {
             console.warn(error);

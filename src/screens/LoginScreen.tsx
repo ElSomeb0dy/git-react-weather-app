@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation/types";
-import { supabase } from "../services/supabase";
+import { signIn, signUp, resetPassword } from "../services/auth";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Login">;
 
@@ -53,7 +53,7 @@ export default function LoginScreen({ navigation }: Props) {
 
         setSubmitting(true);
         try {
-            const { error } = await supabase.auth.signInWithPassword({ email, password });
+            const { error } = await signIn(email, password);
             if (error) {
                 if (error.message.toLowerCase().includes("invalid login credentials")) {
                     showError("Incorrect email or password.");
@@ -81,7 +81,7 @@ export default function LoginScreen({ navigation }: Props) {
 
         setSubmitting(true);
         try {
-            const { error } = await supabase.auth.signUp({ email, password });
+            const { error } = await signUp(email, password);
             if (error) return showError(error.message);
             showSuccess("Account created. You can now log in.");
         } finally {
@@ -96,7 +96,7 @@ export default function LoginScreen({ navigation }: Props) {
         }
         setSubmitting(true);
         try {
-            const { error } = await supabase.auth.resetPasswordForEmail(email);
+            const { error } = await resetPassword(email);
             if (error) return showError(error.message);
             showSuccess("Password reset email sent (if the account exists).");
         } finally {
