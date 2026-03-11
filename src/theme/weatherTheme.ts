@@ -11,7 +11,6 @@ export type Theme = {
     subtleText: string;
     accent: string;
 
-    // Optional simple geometry decorations for the background
     decorations?: Decoration[];
 };
 

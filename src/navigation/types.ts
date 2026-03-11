@@ -3,5 +3,6 @@ export type RootStackParamList = {
     Login: undefined;
     Home: undefined;
     WeatherDetail: { city: string };
-    Settings: undefined;
+    Forecast: { city: string; condition: string };
+    Settings: { condition: string };
 };

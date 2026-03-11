@@ -18,7 +18,7 @@ import { formatTemp } from "../utils/format";
 import { themeForCondition } from "../theme/weatherTheme";
 import CityRow from "../components/CityRow";
 import { supabase } from "../services/supabase";
-import { loadSettings } from "../storage/settings";
+import { loadSettings, HomeThemeMode } from "../storage/settings";
 import {
     View,
     Text,
@@ -52,6 +52,8 @@ export default function HomeScreen({ navigation }: Props) {
     const [loading, setLoading] = useState(true);
     const [weatherMap, setWeatherMap] = useState<Record<string, CurrentWeather>>({});
     const [unit, setUnit] = useState<"C" | "F">("C");
+    const [homeTheme, setHomeTheme] = useState<HomeThemeMode>("top");
+    const [fixedTheme, setFixedTheme] = useState("Clouds");
 
     // On-screen feedback (success/error)
     const [status, setStatus] = useState<{ type: "error" | "success"; text: string } | null>(null);
@@ -92,16 +94,28 @@ export default function HomeScreen({ navigation }: Props) {
     const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     useEffect(() => () => { if (debounceRef.current) clearTimeout(debounceRef.current); }, []);
 
-    // Pick first city's weather as the global screen theme
-    const activeTheme = useMemo(() => {
-        const first = cities[0] && weatherMap[cities[0]];
-        return first ? themeForCondition(first.condition) : themeForCondition("Clouds");
-    }, [cities, weatherMap]);
+    // Derive active condition + theme based on homeTheme setting
+    const { activeTheme, activeCondition } = useMemo(() => {
+        let condition: string;
+        if (homeTheme === "location") {
+            condition = locationWeather?.condition ?? "Clouds";
+        } else if (homeTheme === "fixed") {
+            condition = fixedTheme;
+        } else {
+            const first = cities.length > 0 ? weatherMap[cities[0]] : undefined;
+            condition = first?.condition ?? "Clouds";
+        }
+        return { activeTheme: themeForCondition(condition as any), activeCondition: condition };
+    }, [cities, weatherMap, locationWeather, homeTheme, fixedTheme]);
 
-    // Load unit on focus (also runs on mount, so no separate useEffect needed)
+    // Load all settings on focus
     useFocusEffect(
         useCallback(() => {
-            loadSettings().then((s) => setUnit(s.unit));
+            loadSettings().then((s) => {
+                setUnit(s.unit);
+                setHomeTheme(s.homeTheme);
+                setFixedTheme(s.fixedTheme);
+            });
         }, [])
     );
 
@@ -218,7 +232,7 @@ export default function HomeScreen({ navigation }: Props) {
 
             <View style={styles.greetingRow}>
                 <Text style={[styles.greeting, { color: activeTheme.text }]}>{getGreeting()}</Text>
-                <Pressable onPress={() => navigation.navigate("Settings")} hitSlop={8}>
+                <Pressable onPress={() => navigation.navigate("Settings", { condition: activeCondition })} hitSlop={8}>
                     <Ionicons name="settings-outline" size={22} color={activeTheme.accent} />
                 </Pressable>
             </View>
