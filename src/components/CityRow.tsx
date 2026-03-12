@@ -5,7 +5,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { CurrentWeather } from "../types/weather";
 import { tempColor } from "../utils/tempColor";
 import { formatTemp, weatherIconUrl } from "../utils/format";
-import { useLocalTime } from "../utils/useLocalTime";
+import { useLocalTime } from "../hooks/useLocalTime";
 
 type Props = {
     city: string;

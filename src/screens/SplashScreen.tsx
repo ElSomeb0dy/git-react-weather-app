@@ -7,9 +7,7 @@ import { getSession, onAuthStateChange } from "../services/auth";
 type Props = NativeStackScreenProps<RootStackParamList, "Splash">;
 
 export default function SplashScreen({ navigation }: Props) {
-    // On mount: check if a session exists.
-    // If yes, go to Home
-    // If no, go to Login
+    // On mount: if session exists go to Home else Login
     useEffect(() => {
         let mounted = true;
 

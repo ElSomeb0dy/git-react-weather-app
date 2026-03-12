@@ -5,7 +5,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { RootStackParamList } from "../navigation/types";
 import { fetchCurrentWeather, fetchForecast } from "../services/openWeather";
 import { formatTemp } from "../utils/format";
-import { useLocalTime } from "../utils/useLocalTime";
+import { useLocalTime } from "../hooks/useLocalTime";
 import { CurrentWeather, ForecastDay } from "../types/weather";
 import { themeForCondition, isNightTime } from "../theme/weatherTheme";
 import { loadSettings } from "../storage/settings";
@@ -117,7 +117,7 @@ export default function WeatherDetailScreen({ route, navigation }: Props) {
                 contentContainerStyle={[styles.scroll, { paddingTop: insets.top + 52 }]}
                 showsVerticalScrollIndicator={false}
             >
-                {/* Hero — floats on background */}
+                {/* Hero on background */}
                 <View style={styles.hero}>
                     <Text style={[styles.cityName, { color: theme.text }]}>
                         {weather.city}, {weather.country}
@@ -206,7 +206,6 @@ const styles = StyleSheet.create({
     cityName: { fontSize: 20, fontWeight: "700", opacity: 0.85 },
     heroTemp: { fontSize: 72, fontWeight: "500", marginTop: 4, letterSpacing: -2 },
     heroDesc: { fontSize: 16, fontWeight: "500", textTransform: "capitalize" },
-    heroHL: { fontSize: 14, fontWeight: "600", marginTop: 6, opacity: 0.8 },
     heroTime: { fontSize: 13, fontWeight: "500", marginTop: 4, opacity: 0.7 },
 
     // Cards

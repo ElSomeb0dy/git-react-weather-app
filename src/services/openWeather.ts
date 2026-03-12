@@ -9,7 +9,7 @@ const GEO = "https://api.openweathermap.org/geo/1.0/direct";
 
 const kelvinToC = (k: number) => k - 273.15;
 const cToF = (c: number) => (c * 9) / 5 + 32;
-const r1 = (n: number) => Math.round(n * 10) / 10;
+const round1dp = (n: number) => Math.round(n * 10) / 10;
 
 function parseWeatherData(data: any): CurrentWeather {
     const c = kelvinToC(data.main.temp);
@@ -21,19 +21,19 @@ function parseWeatherData(data: any): CurrentWeather {
     return {
         city: data.name,
         country: data.sys.country,
-        tempC: r1(c),
-        tempF: r1(cToF(c)),
+        tempC: round1dp(c),
+        tempF: round1dp(cToF(c)),
         condition,
         description: (data.weather?.[0]?.description ?? "").replace(/\b\w/g, (ch: string) => ch.toUpperCase()),
         icon: data.weather?.[0]?.icon ?? "01d",
         humidity: data.main.humidity,
         windSpeed: data.wind.speed,
-        feelsLikeC: r1(fl),
-        feelsLikeF: r1(cToF(fl)),
-        minTempC: r1(min),
-        minTempF: r1(cToF(min)),
-        maxTempC: r1(max),
-        maxTempF: r1(cToF(max)),
+        feelsLikeC: round1dp(fl),
+        feelsLikeF: round1dp(cToF(fl)),
+        minTempC: round1dp(min),
+        minTempF: round1dp(cToF(min)),
+        maxTempC: round1dp(max),
+        maxTempF: round1dp(cToF(max)),
         pressure: data.main.pressure,
         visibility: data.visibility ?? 0,
         sunrise: data.sys.sunrise ? data.sys.sunrise * 1000 : null,
@@ -143,8 +143,8 @@ export async function fetchForecast(city: string): Promise<ForecastDay[]> {
 
     return days.map(([day, slots]) => {
         const temps = slots.map((s: any) => kelvinToC(s.main.temp));
-        const minC = r1(Math.min(...temps));
-        const maxC = r1(Math.max(...temps));
+        const minC = round1dp(Math.min(...temps));
+        const maxC = round1dp(Math.max(...temps));
         // Pick midday slot for representative condition/icon
         const mid = slots.find((s: any) => new Date(s.dt * 1000).getHours() >= 12) ?? slots[0];
         const condition = (mid.weather?.[0]?.main ?? "Clouds") as WeatherCondition;
@@ -157,8 +157,8 @@ export async function fetchForecast(city: string): Promise<ForecastDay[]> {
             date: new Date(day).getTime(),
             minTempC: minC,
             maxTempC: maxC,
-            minTempF: r1(cToF(minC)),
-            maxTempF: r1(cToF(maxC)),
+            minTempF: round1dp(cToF(minC)),
+            maxTempF: round1dp(cToF(maxC)),
             condition,
             description,
             icon: mid.weather?.[0]?.icon ?? "01d",
@@ -179,8 +179,8 @@ export async function fetchNextSlots(city: string, count = 8): Promise<ForecastS
         const c = kelvinToC(item.main.temp);
         return {
             time: item.dt * 1000,
-            tempC: r1(c),
-            tempF: r1(cToF(c)),
+            tempC: round1dp(c),
+            tempF: round1dp(cToF(c)),
             icon: item.weather?.[0]?.icon ?? "01d",
         };
     });

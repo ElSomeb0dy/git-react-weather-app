@@ -6,7 +6,7 @@ export type HomeThemeMode = "location" | "top" | "fixed";
 export type Settings = {
     unit: "C" | "F";
     homeTheme: HomeThemeMode;
-    fixedTheme: string; // one of: Clear, Clouds, Rain, Snow, Thunderstorm
+    fixedTheme: string; 
 };
 
 const DEFAULT_SETTINGS: Settings = { unit: "C", homeTheme: "top", fixedTheme: "Clouds" };
