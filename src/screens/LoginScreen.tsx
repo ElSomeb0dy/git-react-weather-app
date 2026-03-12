@@ -112,9 +112,16 @@ export default function LoginScreen({ navigation }: Props) {
         >
             <ScrollView contentContainerStyle={styles.screen} keyboardShouldPersistTaps="handled">
                 <View style={styles.header}>
-                    <Text style={styles.logo}>☀️</Text>
+                    <View style={styles.sun}>
+                        {Array.from({ length: 8 }).map((_, i) => (
+                            <View
+                                key={i}
+                                style={[styles.ray, { transform: [{ rotate: `${i * 45}deg` }] }]}
+                            />
+                        ))}
+                        <View style={styles.sunCore} />
+                    </View>
                     <Text style={styles.title}>React Weather</Text>
-                    <Text style={styles.subtitle}>Log in to sync your saved cities</Text>
                     <View style={styles.chipRow}>
                         <Chip label="Clear" bg="#FFB703" text="#0B1220" />
                         <Chip label="Rain" bg="#0EA5E9" text="#06111D" />
@@ -199,12 +206,20 @@ const styles = StyleSheet.create({
     },
     chipText: { fontWeight: "900", fontSize: 12 },
 
-    screen: { flexGrow: 1, padding: 16, justifyContent: "center", gap: 16, backgroundColor: "#E5E7EB" },
+    screen: { flexGrow: 1, padding: 16, justifyContent: "center", gap: 16, backgroundColor: "#DBEAFE" },
 
     header: { alignItems: "center", marginBottom: 6 },
-    logo: { fontSize: 42, marginBottom: 6 },
-    title: { fontSize: 28, fontWeight: "900" },
-    subtitle: { marginTop: 6, color: "#374151", textAlign: "center" },
+    sun: { width: 64, height: 64, alignItems: "center", justifyContent: "center", marginBottom: 10 },
+    ray: {
+        position: "absolute",
+        width: 4,
+        height: 64,
+        borderRadius: 2,
+        backgroundColor: "#FBBF24",
+        opacity: 0.7,
+    },
+    sunCore: { width: 28, height: 28, borderRadius: 14, backgroundColor: "#FBBF24" },
+    title: { fontSize: 28, fontWeight: "900", color: "#111827" },
 
     card: { backgroundColor: "white", borderRadius: 18, padding: 16, gap: 10 },
     cardTitle: { fontSize: 18, fontWeight: "800", marginBottom: 4 },
@@ -236,5 +251,5 @@ const styles = StyleSheet.create({
     msgErr: { color: "#DC2626" },
     msgOk: { color: "#16A34A" },
 
-    footerNote: { textAlign: "center", color: "#374151" },
+    footerNote: { textAlign: "center", color: "#6B7280" },
 });

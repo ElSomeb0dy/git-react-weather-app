@@ -125,8 +125,6 @@ export default function HomeScreen({ navigation }: Props) {
         const topNight = isNightTime(topWeather?.sunrise ?? null, topWeather?.sunset ?? null);
         return {
             activeTheme: themeForCondition(condition as any, night),
-            activeCondition: condition,
-            activeNight: night,
             locationCondition: locationWeather?.condition ?? "Clouds",
             locationIsNight: locNight,
             topCondition: topWeather?.condition ?? "Clouds",
@@ -465,7 +463,7 @@ const styles = StyleSheet.create({
     },
     locationCity: { fontSize: 15, fontWeight: "600", marginBottom: 2, textAlign: "center" },
     locationTime: { fontSize: 12, fontWeight: "500", opacity: 0.7, marginBottom: 2, textAlign: "center" },
-    locationTemp: { fontSize: 72, fontWeight: "200", marginBottom: 2, textAlign: "center", letterSpacing: -2 },
+    locationTemp: { fontSize: 72, fontWeight: "500", marginBottom: 2, textAlign: "center", letterSpacing: -2 },
     locationFeelsLike: { fontSize: 13, opacity: 0.7, textAlign: "center" },
 
     suggestBox: {

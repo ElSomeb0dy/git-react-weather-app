@@ -207,7 +207,7 @@ const styles = StyleSheet.create({
     // Hero
     hero: { alignItems: "center", paddingVertical: 20 },
     cityName: { fontSize: 20, fontWeight: "700", opacity: 0.85 },
-    heroTemp: { fontSize: 72, fontWeight: "200", marginTop: 4, letterSpacing: -2 },
+    heroTemp: { fontSize: 72, fontWeight: "500", marginTop: 4, letterSpacing: -2 },
     heroDesc: { fontSize: 16, fontWeight: "500", textTransform: "capitalize" },
     heroHL: { fontSize: 14, fontWeight: "600", marginTop: 6, opacity: 0.8 },
     heroTime: { fontSize: 13, fontWeight: "500", marginTop: 4, opacity: 0.7 },
