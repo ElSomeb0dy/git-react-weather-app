@@ -56,7 +56,7 @@ export default function CityRow({ city, weather, unit, cardColor, textColor, onO
 }
 
 const styles = StyleSheet.create({
-    card: { borderRadius: 16, padding: 14, flexDirection: "row", alignItems: "center" },
+    card: { borderRadius: 16, padding: 14, flexDirection: "row", alignItems: "center", borderWidth: 1, borderColor: "rgba(128,128,128,0.25)" },
     icon: { width: 36, height: 36 },
     city: { fontSize: 18, fontWeight: "800" },
     temp: { fontSize: 22, fontWeight: "800" },

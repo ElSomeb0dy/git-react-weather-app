@@ -79,6 +79,77 @@ const THEMES: Record<string, Theme> = {
     },
 };
 
-export function themeForCondition(condition: WeatherCondition): Theme {
-    return THEMES[condition] ?? THEMES.Clouds;
+const NIGHT_THEMES: Record<string, Theme> = {
+    Clear: {
+        background: "#0F172A",
+        card: "rgba(30, 41, 59, 0.85)",
+        text: "#F1F5F9",
+        subtleText: "#94A3B8",
+        accent: "#818CF8",
+        decorations: [
+            { type: "circle", size: 220, top: 40, right: -70, opacity: 0.10 },
+            { type: "circle", size: 140, top: 120, right: -30, opacity: 0.08 },
+        ],
+    },
+    Rain: {
+        background: "#0C1A2E",
+        card: "rgba(15, 30, 55, 0.85)",
+        text: "#E2E8F0",
+        subtleText: "#94A3B8",
+        accent: "#3B82F6",
+        decorations: [
+            { type: "line", width: 4, height: 34, top: 90, left: 30, rotateDeg: 15, opacity: 0.15 },
+            { type: "line", width: 4, height: 40, top: 140, left: 70, rotateDeg: 15, opacity: 0.12 },
+            { type: "line", width: 4, height: 30, top: 110, left: 120, rotateDeg: 15, opacity: 0.12 },
+            { type: "line", width: 4, height: 38, top: 170, left: 170, rotateDeg: 15, opacity: 0.12 },
+        ],
+    },
+    Snow: {
+        background: "#1E293B",
+        card: "rgba(30, 41, 59, 0.85)",
+        text: "#F1F5F9",
+        subtleText: "#94A3B8",
+        accent: "#7DD3FC",
+        decorations: [
+            { type: "circle", size: 10, top: 90, left: 40, opacity: 0.20 },
+            { type: "circle", size: 8, top: 140, left: 110, opacity: 0.18 },
+            { type: "circle", size: 12, top: 180, left: 220, opacity: 0.16 },
+            { type: "circle", size: 9, top: 120, left: 280, opacity: 0.18 },
+        ],
+    },
+    Clouds: {
+        background: "#1E2530",
+        card: "rgba(30, 37, 48, 0.85)",
+        text: "#E2E8F0",
+        subtleText: "#94A3B8",
+        accent: "#64748B",
+        decorations: [
+            { type: "circle", size: 180, top: 70, left: -60, opacity: 0.08 },
+            { type: "circle", size: 220, top: 110, left: 30, opacity: 0.06 },
+            { type: "circle", size: 160, top: 60, right: -50, opacity: 0.06 },
+        ],
+    },
+    Thunderstorm: {
+        background: "#130F1E",
+        card: "rgba(25, 20, 40, 0.85)",
+        text: "#E2E8F0",
+        subtleText: "#94A3B8",
+        accent: "#A78BFA",
+        decorations: [
+            { type: "circle", size: 200, top: 60, left: -70, opacity: 0.08 },
+            { type: "line", width: 6, height: 46, top: 130, right: 40, rotateDeg: -15, opacity: 0.14 },
+            { type: "line", width: 6, height: 34, top: 190, right: 70, rotateDeg: -15, opacity: 0.12 },
+        ],
+    },
+};
+
+export function isNightTime(sunrise: number | null, sunset: number | null): boolean {
+    if (!sunrise || !sunset) return false;
+    const now = Date.now() / 1000;
+    return now < sunrise || now > sunset;
+}
+
+export function themeForCondition(condition: WeatherCondition, night = false): Theme {
+    const map = night ? NIGHT_THEMES : THEMES;
+    return map[condition] ?? (night ? NIGHT_THEMES.Clouds : THEMES.Clouds);
 }

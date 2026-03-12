@@ -16,7 +16,7 @@ import * as Location from "expo-location";
 import { CurrentWeather, ForecastSlot } from "../types/weather";
 import { tempColor } from "../utils/tempColor";
 import { formatTemp } from "../utils/format";
-import { themeForCondition } from "../theme/weatherTheme";
+import { themeForCondition, isNightTime } from "../theme/weatherTheme";
 import CityRow from "../components/CityRow";
 import { getCities, insertCity, deleteCity } from "../services/cities";
 import { loadSettings, HomeThemeMode } from "../storage/settings";
@@ -31,6 +31,9 @@ import {
     Image,
     ActivityIndicator,
     Alert,
+    Modal,
+    KeyboardAvoidingView,
+    Platform,
 } from "react-native";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Home">;
@@ -63,7 +66,7 @@ export default function HomeScreen({ navigation }: Props) {
 
     useEffect(() => {
         if (!status) return;
-        const t = setTimeout(clearStatus, 3000);
+        const t = setTimeout(clearStatus, 1500);
         return () => clearTimeout(t);
     }, [status]);
 
@@ -91,6 +94,8 @@ export default function HomeScreen({ navigation }: Props) {
     const [showInput, setShowInput] = useState(false);
     const inputRef = useRef<TextInput>(null);
 
+    const closeModal = () => { setShowInput(false); setNewCity(""); setSuggestions([]); setShowSuggestions(false); };
+
     // Autocomplete suggestions
     const [suggestions, setSuggestions] = useState<CitySuggestion[]>([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
@@ -100,15 +105,19 @@ export default function HomeScreen({ navigation }: Props) {
     // Derive active condition + theme based on homeTheme setting
     const { activeTheme, activeCondition } = useMemo(() => {
         let condition: string;
+        let sourceWeather: typeof locationWeather | undefined;
         if (homeTheme === "location") {
             condition = locationWeather?.condition ?? "Clouds";
+            sourceWeather = locationWeather;
         } else if (homeTheme === "fixed") {
             condition = fixedTheme;
         } else {
             const first = cities.length > 0 ? weatherMap[cities[0]] : undefined;
             condition = first?.condition ?? "Clouds";
+            sourceWeather = first;
         }
-        return { activeTheme: themeForCondition(condition as any), activeCondition: condition };
+        const night = isNightTime(sourceWeather?.sunrise ?? null, sourceWeather?.sunset ?? null);
+        return { activeTheme: themeForCondition(condition as any, night), activeCondition: condition };
     }, [cities, weatherMap, locationWeather, homeTheme, fixedTheme]);
 
     // Load all settings on focus
@@ -198,8 +207,8 @@ export default function HomeScreen({ navigation }: Props) {
 
         setCities([city, ...cities]);
         setNewCity("");
-        setShowInput(false);
         showSuccess(`Added ${city}.`);
+        setTimeout(() => { setShowInput(false); setSuggestions([]); setShowSuggestions(false); }, 1000);
     };
 
     const removeCity = async (city: string) => {
@@ -248,9 +257,6 @@ export default function HomeScreen({ navigation }: Props) {
                     <Text style={[styles.locationFeelsLike, { color: activeTheme.text }]}>
                         Feels Like: {formatTemp(locationWeather.feelsLikeC, locationWeather.feelsLikeF, unit)}
                     </Text>
-                    <Text style={[styles.locationFeelsLike, { color: activeTheme.text }]}>
-                        H: {locationWeather.humidity}%{"   "}W: {locationWeather.windSpeed} m/s
-                    </Text>
 
                     {locationSlots.length > 0 && (
                         <ScrollView
@@ -278,73 +284,81 @@ export default function HomeScreen({ navigation }: Props) {
 
                     <Pressable
                         style={[styles.forecastBtn, { backgroundColor: activeTheme.accent }]}
-                        onPress={() => navigation.navigate("Forecast", {
+                        onPress={() => navigation.navigate("WeatherDetail", {
                             city: locationWeather.city,
-                            condition: locationWeather.condition,
                         })}
                     >
-                        <Text style={styles.forecastBtnText}>5-Day Forecast</Text>
+                        <Text style={styles.forecastBtnText}>View Details</Text>
                     </Pressable>
                 </View>
             )}
 
-            {showInput && (
-                <View style={styles.row}>
-                    <TextInput
-                        ref={inputRef}
-                        style={[styles.input, { backgroundColor: activeTheme.card }]}
-                        placeholder="Add a city (e.g., London)"
-                        value={newCity}
-                        autoFocus
-                        onBlur={() => { if (!newCity.trim()) setShowInput(false); }}
-                        onChangeText={(t) => {
-                            setNewCity(t);
-                            clearStatus();
-
-                            if (debounceRef.current) clearTimeout(debounceRef.current);
-
-                            const q = t.trim();
-                            if (q.length < 2) {
-                                setSuggestions([]);
-                                setShowSuggestions(false);
-                                return;
-                            }
-
-                            debounceRef.current = setTimeout(async () => {
-                                const list = await fetchCitySuggestions(q);
-                                setSuggestions(list);
-                                setShowSuggestions(true);
-                            }, 250);
-                        }}
-                    />
-                    <Pressable style={[styles.addBtn, { backgroundColor: activeTheme.accent }]} onPress={addCity}>
-                        <Text style={styles.addBtnText}>Add</Text>
-                    </Pressable>
-                </View>
-            )}
-
-            {showSuggestions && suggestions.length > 0 && (
-                <View style={[styles.suggestBox, { backgroundColor: activeTheme.card }]}>
-                    {suggestions.map((s) => (
-                        <Pressable
-                            key={`${s.lat},${s.lon}`}                            style={styles.suggestRow}
-                            onPress={() => {
-                                setNewCity(s.label);
-                                setShowSuggestions(false);
-                                setSuggestions([]);
-                            }}
-                        >
-                            <Text style={{ color: activeTheme.text, fontWeight: "700" }}>{s.label}</Text>
-                        </Pressable>
-                    ))}
-                </View>
-            )}
-
-            {status && (
-                <Text style={[styles.status, status.type === "error" ? styles.statusError : styles.statusSuccess]}>
-                    {status.text}
-                </Text>
-            )}
+            <Modal
+                visible={showInput}
+                transparent
+                animationType="slide"
+                onRequestClose={closeModal}
+            >
+                <KeyboardAvoidingView
+                    style={styles.modalOverlay}
+                    behavior={Platform.OS === "ios" ? "padding" : "height"}
+                >
+                    <Pressable style={styles.modalBackdrop} onPress={closeModal} />
+                    <View style={[styles.modalSheet, { backgroundColor: activeTheme.background }]}>
+                        <Text style={[styles.modalTitle, { color: activeTheme.text }]}>Add a City</Text>
+                        {status && (
+                            <Text style={[styles.status, status.type === "error" ? styles.statusError : styles.statusSuccess]}>
+                                {status.text}
+                            </Text>
+                        )}
+                        <View style={styles.row}>
+                            <TextInput
+                                ref={inputRef}
+                                style={[styles.input, { backgroundColor: activeTheme.card, color: activeTheme.text }]}
+                                placeholder="Search city (e.g., London)"
+                                placeholderTextColor={activeTheme.subtleText}
+                                value={newCity}
+                                autoFocus
+                                onChangeText={(t) => {
+                                    setNewCity(t);
+                                    clearStatus();
+                                    if (debounceRef.current) clearTimeout(debounceRef.current);
+                                    const q = t.trim();
+                                    if (q.length < 2) { setSuggestions([]); setShowSuggestions(false); return; }
+                                    debounceRef.current = setTimeout(async () => {
+                                        const list = await fetchCitySuggestions(q);
+                                        setSuggestions(list);
+                                        setShowSuggestions(true);
+                                    }, 250);
+                                }}
+                            />
+                            <Pressable style={[styles.addBtn, { backgroundColor: activeTheme.accent }]} onPress={addCity}>
+                                <Text style={styles.addBtnText}>Add</Text>
+                            </Pressable>
+                        </View>
+                        {showSuggestions && suggestions.length > 0 && (
+                            <FlatList
+                                data={suggestions}
+                                keyExtractor={(s) => `${s.lat},${s.lon}`}
+                                style={[styles.suggestBox, { backgroundColor: activeTheme.card }]}
+                                keyboardShouldPersistTaps="handled"
+                                renderItem={({ item: s }) => (
+                                    <Pressable
+                                        style={styles.suggestRow}
+                                        onPress={() => {
+                                            setNewCity(s.label);
+                                            setShowSuggestions(false);
+                                            setSuggestions([]);
+                                        }}
+                                    >
+                                        <Text style={{ color: activeTheme.text, fontWeight: "700" }}>{s.label}</Text>
+                                    </Pressable>
+                                )}
+                            />
+                        )}
+                    </View>
+                </KeyboardAvoidingView>
+            </Modal>
 
             <View style={styles.rowBetween}>
                 <Text style={[styles.h2, { color: activeTheme.text }]}>Locations</Text>
@@ -360,17 +374,20 @@ export default function HomeScreen({ navigation }: Props) {
                 keyExtractor={(item) => item}
                 contentContainerStyle={{ gap: 10, paddingVertical: 12 }}
                 keyboardShouldPersistTaps="handled"
-                renderItem={({ item }) => (
-                    <CityRow
-                        city={item}
-                        weather={weatherMap[item]}
-                        unit={unit}
-                        cardColor={activeTheme.card}
-                        textColor={activeTheme.text}
-                        onOpen={() => navigation.navigate("WeatherDetail", { city: item })}
-                        onRemove={() => removeCity(item)}
-                    />
-                )}
+                renderItem={({ item }) => {
+                    const w = weatherMap[item];
+                    return (
+                        <CityRow
+                            city={item}
+                            weather={w}
+                            unit={unit}
+                            cardColor={activeTheme.card}
+                            textColor={activeTheme.text}
+                            onOpen={() => navigation.navigate("WeatherDetail", { city: item })}
+                            onRemove={() => removeCity(item)}
+                        />
+                    );
+                }}
             />
 
         </View>
@@ -386,13 +403,13 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
-        marginTop: 14,
+        marginTop: 6,
     },
 
     input: { flex: 1, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 12 },
     addBtn: { paddingHorizontal: 16, borderRadius: 12, alignItems: "center", justifyContent: "center" },
     addBtnText: { color: "white", fontWeight: "800" },
-    h2: { fontSize: 20, fontWeight: "800" },
+    h2: { fontSize: 16, fontWeight: "800" },
     link: { fontWeight: "800" },
 
     status: { marginTop: 10, textAlign: "center", fontWeight: "800" },
@@ -404,9 +421,11 @@ const styles = StyleSheet.create({
         padding: 14,
         marginBottom: 10,
         alignItems: "center",
+        borderWidth: 1,
+        borderColor: "rgba(128,128,128,0.25)",
     },
     locationCity: { fontSize: 15, fontWeight: "600", marginBottom: 2, textAlign: "center" },
-    locationTemp: { fontSize: 48, fontWeight: "800", marginBottom: 2, textAlign: "center" },
+    locationTemp: { fontSize: 72, fontWeight: "200", marginBottom: 2, textAlign: "center", letterSpacing: -2 },
     locationFeelsLike: { fontSize: 13, opacity: 0.7, textAlign: "center" },
 
     suggestBox: {
@@ -450,4 +469,17 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     forecastBtnText: { color: "white", fontWeight: "800", fontSize: 13 },
+
+    modalOverlay: { flex: 1, justifyContent: "flex-end" },
+    modalBackdrop: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0 },
+    modalSheet: {
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        padding: 20,
+        paddingBottom: 36,
+        gap: 12,
+        flex: 1,
+        marginTop: 60,
+    },
+    modalTitle: { fontSize: 18, fontWeight: "800", marginBottom: 4 },
 });
