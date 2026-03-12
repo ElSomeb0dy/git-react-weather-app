@@ -106,7 +106,7 @@ export default function HomeScreen({ navigation }: Props) {
     useEffect(() => () => { if (debounceRef.current) clearTimeout(debounceRef.current); }, []);
 
     // Derive active condition + theme based on homeTheme setting
-    const { activeTheme, activeCondition, activeNight } = useMemo(() => {
+    const { activeTheme, locationCondition, locationIsNight, topCondition, topIsNight } = useMemo(() => {
         let condition: string;
         let sourceWeather: typeof locationWeather | undefined;
         if (homeTheme === "location") {
@@ -120,7 +120,18 @@ export default function HomeScreen({ navigation }: Props) {
             sourceWeather = first;
         }
         const night = isNightTime(sourceWeather?.sunrise ?? null, sourceWeather?.sunset ?? null);
-        return { activeTheme: themeForCondition(condition as any, night), activeCondition: condition, activeNight: night };
+        const locNight = isNightTime(locationWeather?.sunrise ?? null, locationWeather?.sunset ?? null);
+        const topWeather = cities.length > 0 ? weatherMap[cities[0]] : undefined;
+        const topNight = isNightTime(topWeather?.sunrise ?? null, topWeather?.sunset ?? null);
+        return {
+            activeTheme: themeForCondition(condition as any, night),
+            activeCondition: condition,
+            activeNight: night,
+            locationCondition: locationWeather?.condition ?? "Clouds",
+            locationIsNight: locNight,
+            topCondition: topWeather?.condition ?? "Clouds",
+            topIsNight: topNight,
+        };
     }, [cities, weatherMap, locationWeather, homeTheme, fixedTheme]);
 
     // Load all settings on focus
@@ -256,7 +267,7 @@ export default function HomeScreen({ navigation }: Props) {
 
             <View style={styles.greetingRow}>
                 <Text style={[styles.greeting, { color: activeTheme.text }]}>{getGreeting()}</Text>
-                <Pressable onPress={() => navigation.navigate("Settings", { condition: activeCondition, isNight: activeNight })} hitSlop={8}>
+                <Pressable onPress={() => navigation.navigate("Settings", { locationCondition, locationIsNight, topCondition, topIsNight })} hitSlop={8}>
                     <Ionicons name="settings-outline" size={22} color={activeTheme.accent} />
                 </Pressable>
             </View>
@@ -305,6 +316,7 @@ export default function HomeScreen({ navigation }: Props) {
                         style={[styles.forecastBtn, { backgroundColor: activeTheme.accent }]}
                         onPress={() => navigation.navigate("WeatherDetail", {
                             city: locationWeather.city,
+                            background: activeTheme.background,
                         })}
                     >
                         <Text style={styles.forecastBtnText}>View Details</Text>
@@ -339,7 +351,7 @@ export default function HomeScreen({ navigation }: Props) {
                             <TextInput
                                 ref={inputRef}
                                 style={[styles.input, { backgroundColor: activeTheme.card, color: activeTheme.text }]}
-                                placeholder="Search city (e.g., London)"
+                                placeholder="Search city (e.g., Hong Kong)"
                                 placeholderTextColor={activeTheme.subtleText}
                                 value={newCity}
                                 autoFocus
@@ -410,7 +422,7 @@ export default function HomeScreen({ navigation }: Props) {
                             cardColor={activeTheme.card}
                             textColor={activeTheme.text}
                             subtleTextColor={activeTheme.subtleText}
-                            onOpen={() => navigation.navigate("WeatherDetail", { city: item })}
+                            onOpen={() => navigation.navigate("WeatherDetail", { city: item, background: activeTheme.background })}
                             onRemove={() => removeCity(item)}
                         />
                     );

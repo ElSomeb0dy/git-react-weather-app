@@ -61,9 +61,13 @@ export default function WeatherDetailScreen({ route, navigation }: Props) {
     }, [weather]);
 
     if (loading) {
+        const bg = route.params.background ?? "#fff";
+        const isDark = route.params.background != null;
+        const subtleCol = isDark ? "rgba(255,255,255,0.5)" : "#6B7280";
         return (
-            <View style={[styles.center, { backgroundColor: "#fff" }]}>
-                <ActivityIndicator />
+            <View style={[styles.center, { backgroundColor: bg }]}>
+                <ActivityIndicator color={isDark ? "#fff" : "#000"} />
+                <Text style={[styles.loadingLabel, { color: subtleCol }]}>Fetching data…</Text>
             </View>
         );
     }
@@ -237,4 +241,6 @@ const styles = StyleSheet.create({
     statValue: { fontSize: 15, fontWeight: "800", textAlign: "center" },
 
     updatedText: { fontSize: 11, textAlign: "center", opacity: 0.6 },
+
+    loadingLabel: { fontSize: 13, fontWeight: "500", marginTop: 10, textAlign: "center" },
 });

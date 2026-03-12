@@ -49,8 +49,14 @@ export default function SettingsScreen({ route, navigation }: Props) {
     };
 
     const themeCondition =
-        settings.homeTheme === "fixed" ? settings.fixedTheme : route.params.condition;
-    const theme = themeForCondition(themeCondition as any, route.params.isNight);
+        settings.homeTheme === "fixed" ? settings.fixedTheme :
+        settings.homeTheme === "location" ? route.params.locationCondition :
+        route.params.topCondition;
+    const themeNight =
+        settings.homeTheme === "location" ? route.params.locationIsNight :
+        settings.homeTheme === "top" ? route.params.topIsNight :
+        false;
+    const theme = themeForCondition(themeCondition as any, themeNight);
 
     return (
         <View style={[styles.container, { backgroundColor: theme.background }]}>
@@ -129,18 +135,13 @@ export default function SettingsScreen({ route, navigation }: Props) {
                                 return (
                                     <Pressable
                                         key={opt.key}
-                                        style={[
-                                            styles.swatchBtn,
-                                            { backgroundColor: t.background, borderColor: t.accent },
-                                            selected && styles.swatchSelected,
-                                        ]}
+                                        style={styles.dotItem}
                                         onPress={() => update({ fixedTheme: opt.key })}
                                     >
-                                        <View style={[styles.swatchDot, { backgroundColor: t.accent }]} />
-                                        <Text style={[styles.swatchLabel, { color: t.text }]}>{opt.label}</Text>
-                                        {selected && (
-                                            <Ionicons name="checkmark" size={14} color={t.accent} style={{ marginLeft: 2 }} />
-                                        )}
+                                        <View style={[styles.dotRing, { borderColor: selected ? t.accent : "transparent" }]}>
+                                            <View style={[styles.dot, { backgroundColor: t.accent }]} />
+                                        </View>
+                                        <Text style={[styles.dotLabel, { color: theme.subtleText }]}>{opt.label}</Text>
                                     </Pressable>
                                 );
                             })}
@@ -181,20 +182,12 @@ const styles = StyleSheet.create({
     radioLabel: { fontWeight: "800", fontSize: 14 },
     radioDesc: { fontSize: 12, marginTop: 1 },
 
-    // Fixed theme swatches
-    fixedPicker: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 4 },
-    swatchBtn: {
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 6,
-        paddingVertical: 8,
-        paddingHorizontal: 12,
-        borderRadius: 12,
-        borderWidth: 1.5,
-    },
-    swatchSelected: { borderWidth: 2.5 },
-    swatchDot: { width: 10, height: 10, borderRadius: 5 },
-    swatchLabel: { fontWeight: "700", fontSize: 13 },
+    // Fixed theme dots
+    fixedPicker: { flexDirection: "row", justifyContent: "space-between", marginTop: 4 },
+    dotItem: { alignItems: "center", gap: 5 },
+    dotRing: { width: 24, height: 24, borderRadius: 6, borderWidth: 2, alignItems: "center", justifyContent: "center" },
+    dot: { width: 16, height: 16, borderRadius: 3 },
+    dotLabel: { fontSize: 10, fontWeight: "700" },
 
     // Logout
     logout: {

@@ -145,7 +145,7 @@ const NIGHT_THEMES: Record<string, Theme> = {
 
 export function isNightTime(sunrise: number | null, sunset: number | null): boolean {
     if (!sunrise || !sunset) return false;
-    const now = Date.now() / 1000;
+    const now = Date.now();
     return now < sunrise || now > sunset;
 }
 
