@@ -119,10 +119,11 @@ export default function HomeScreen({ navigation }: Props) {
             condition = first?.condition ?? "Clouds";
             sourceWeather = first;
         }
-        const night = isNightTime(sourceWeather?.sunrise ?? null, sourceWeather?.sunset ?? null);
-        const locNight = isNightTime(locationWeather?.sunrise ?? null, locationWeather?.sunset ?? null);
+        const nightFor = (w?: CurrentWeather | null) => isNightTime(w?.sunrise ?? null, w?.sunset ?? null);
         const topWeather = cities.length > 0 ? weatherMap[cities[0]] : undefined;
-        const topNight = isNightTime(topWeather?.sunrise ?? null, topWeather?.sunset ?? null);
+        const night = nightFor(sourceWeather);
+        const locNight = nightFor(locationWeather);
+        const topNight = nightFor(topWeather);
         return {
             activeTheme: themeForCondition(condition as any, night),
             locationCondition: locationWeather?.condition ?? "Clouds",
@@ -463,7 +464,7 @@ const styles = StyleSheet.create({
     },
     locationCity: { fontSize: 15, fontWeight: "600", marginBottom: 2, textAlign: "center" },
     locationTime: { fontSize: 12, fontWeight: "500", opacity: 0.7, marginBottom: 2, textAlign: "center" },
-    locationTemp: { fontSize: 72, fontWeight: "500", marginBottom: 2, textAlign: "center", letterSpacing: -2 },
+    locationTemp: { fontSize: 60, fontWeight: "500", marginBottom: 2, textAlign: "center", letterSpacing: -2 },
     locationFeelsLike: { fontSize: 13, opacity: 0.7, textAlign: "center" },
 
     suggestBox: {

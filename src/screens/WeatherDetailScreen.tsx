@@ -126,9 +126,6 @@ export default function WeatherDetailScreen({ route, navigation }: Props) {
                     <Text style={[styles.heroDesc, { color: theme.subtleText }]}>
                         {weather.description}
                     </Text>
-                    <Text style={[styles.heroHL, { color: theme.subtleText }]}>
-                        H: {maxTemp}   L: {minTemp}
-                    </Text>
                     {localTime ? (
                         <Text style={[styles.heroTime, { color: theme.subtleText }]}>{localTime}</Text>
                     ) : null}
@@ -154,8 +151,8 @@ export default function WeatherDetailScreen({ route, navigation }: Props) {
                         {forecast.map((day, i) => {
                             const dayName = DAY_NAMES[new Date(day.date).getDay()];
                             const dateStr = new Date(day.date).toLocaleDateString([], { month: "short", day: "numeric" });
-                            const minT = unit === "C" ? `${day.minTempC}°` : `${day.minTempF}°`;
-                            const maxT = unit === "C" ? `${day.maxTempC}°` : `${day.maxTempF}°`;
+                            const minT = formatTemp(day.minTempC, day.minTempF, unit);
+                            const maxT = formatTemp(day.maxTempC, day.maxTempF, unit);
                             return (
                                 <View
                                     key={day.date}
