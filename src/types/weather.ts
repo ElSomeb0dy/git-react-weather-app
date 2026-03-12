@@ -53,5 +53,6 @@ export type CurrentWeather = {
     visibility: number;
     sunrise: number | null;
     sunset: number | null;
+    timezone: number;
     updatedAt: number;
 };

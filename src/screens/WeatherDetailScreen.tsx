@@ -5,6 +5,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { RootStackParamList } from "../navigation/types";
 import { fetchCurrentWeather, fetchForecast } from "../services/openWeather";
 import { formatTemp } from "../utils/format";
+import { useLocalTime } from "../utils/useLocalTime";
 import { CurrentWeather, ForecastDay } from "../types/weather";
 import { themeForCondition, isNightTime } from "../theme/weatherTheme";
 import { loadSettings } from "../storage/settings";
@@ -51,6 +52,8 @@ export default function WeatherDetailScreen({ route, navigation }: Props) {
     useEffect(() => {
         loadWeather();
     }, [city]);
+
+    const localTime = useLocalTime(weather?.timezone);
 
     const theme = useMemo(() => {
         const night = isNightTime(weather?.sunrise ?? null, weather?.sunset ?? null);
@@ -122,6 +125,9 @@ export default function WeatherDetailScreen({ route, navigation }: Props) {
                     <Text style={[styles.heroHL, { color: theme.subtleText }]}>
                         H: {maxTemp}   L: {minTemp}
                     </Text>
+                    {localTime ? (
+                        <Text style={[styles.heroTime, { color: theme.subtleText }]}>{localTime}</Text>
+                    ) : null}
                 </View>
 
                 {/* Stats card */}
@@ -200,6 +206,7 @@ const styles = StyleSheet.create({
     heroTemp: { fontSize: 72, fontWeight: "200", marginTop: 4, letterSpacing: -2 },
     heroDesc: { fontSize: 16, fontWeight: "500", textTransform: "capitalize" },
     heroHL: { fontSize: 14, fontWeight: "600", marginTop: 6, opacity: 0.8 },
+    heroTime: { fontSize: 13, fontWeight: "500", marginTop: 4, opacity: 0.7 },
 
     // Cards
     card: { borderRadius: 18, padding: 16, borderWidth: 1, borderColor: "rgba(128,128,128,0.25)" },

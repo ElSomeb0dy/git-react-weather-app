@@ -5,6 +5,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { CurrentWeather } from "../types/weather";
 import { tempColor } from "../utils/tempColor";
 import { formatTemp, weatherIconUrl } from "../utils/format";
+import { useLocalTime } from "../utils/useLocalTime";
 
 type Props = {
     city: string;
@@ -12,13 +13,15 @@ type Props = {
     unit: "C" | "F";
     cardColor: string;
     textColor: string;
+    subtleTextColor: string;
     onOpen: () => void;
     onRemove: () => void;
 };
 
-export default function CityRow({ city, weather, unit, cardColor, textColor, onOpen, onRemove }: Props) {
+export default function CityRow({ city, weather, unit, cardColor, textColor, subtleTextColor, onOpen, onRemove }: Props) {
     const swipeableRef = useRef<SwipeableMethods>(null);
     const temp = weather ? formatTemp(weather.tempC, weather.tempF, unit) : null;
+    const localTime = useLocalTime(weather?.timezone);
 
     const renderRightActions = () => (
         <Pressable
@@ -44,9 +47,14 @@ export default function CityRow({ city, weather, unit, cardColor, textColor, onO
                                 style={styles.icon}
                             />
                         )}
-                        <Text style={[styles.city, { color: textColor }]}>
-                            {weather ? `${weather.city}, ${weather.country}` : city}
-                        </Text>
+                        <View>
+                            <Text style={[styles.city, { color: textColor }]}>
+                                {weather ? `${weather.city}, ${weather.country}` : city}
+                            </Text>
+                            {localTime ? (
+                                <Text style={[styles.localTime, { color: subtleTextColor }]}>{localTime}</Text>
+                            ) : null}
+                        </View>
                     </View>
                     {temp && <Text style={[styles.temp, { color: weather ? tempColor(weather.tempC) : textColor }]}>{temp}</Text>}
                 </Pressable>
@@ -59,6 +67,7 @@ const styles = StyleSheet.create({
     card: { borderRadius: 16, padding: 14, flexDirection: "row", alignItems: "center", borderWidth: 1, borderColor: "rgba(128,128,128,0.25)" },
     icon: { width: 36, height: 36 },
     city: { fontSize: 18, fontWeight: "800" },
+    localTime: { fontSize: 12, fontWeight: "500", marginTop: 2, opacity: 0.7 },
     temp: { fontSize: 22, fontWeight: "800" },
     deleteAction: {
         backgroundColor: "#EF4444",

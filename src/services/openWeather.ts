@@ -38,6 +38,7 @@ function parseWeatherData(data: any): CurrentWeather {
         visibility: data.visibility ?? 0,
         sunrise: data.sys.sunrise ? data.sys.sunrise * 1000 : null,
         sunset: data.sys.sunset ? data.sys.sunset * 1000 : null,
+        timezone: data.timezone ?? 0,
         updatedAt: Date.now(),
     };
 }
@@ -51,7 +52,7 @@ export type CitySuggestion = {
     lon: number;
 };
 
-export async function fetchCitySuggestions(query: string, limit = 6): Promise<CitySuggestion[]> {
+export async function fetchCitySuggestions(query: string, limit = 5): Promise<CitySuggestion[]> {
     if (!query.trim()) return [];
 
     const url = `${GEO}?q=${encodeURIComponent(query)}&limit=${limit}&appid=${API_KEY}`;

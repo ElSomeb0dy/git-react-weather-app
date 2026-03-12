@@ -16,6 +16,7 @@ import * as Location from "expo-location";
 import { CurrentWeather, ForecastSlot } from "../types/weather";
 import { tempColor } from "../utils/tempColor";
 import { formatTemp } from "../utils/format";
+import { useLocalTime } from "../utils/useLocalTime";
 import { themeForCondition, isNightTime } from "../theme/weatherTheme";
 import CityRow from "../components/CityRow";
 import { getCities, insertCity, deleteCity } from "../services/cities";
@@ -72,6 +73,7 @@ export default function HomeScreen({ navigation }: Props) {
 
     // Current location weather
     const [locationWeather, setLocationWeather] = useState<CurrentWeather | null>(null);
+    const locationLocalTime = useLocalTime(locationWeather?.timezone);
     const [locationSlots, setLocationSlots] = useState<ForecastSlot[]>([]);
 
     useEffect(() => {
@@ -94,16 +96,17 @@ export default function HomeScreen({ navigation }: Props) {
     const [showInput, setShowInput] = useState(false);
     const inputRef = useRef<TextInput>(null);
 
-    const closeModal = () => { setShowInput(false); setNewCity(""); setSuggestions([]); setShowSuggestions(false); };
+    const closeModal = () => { setShowInput(false); setNewCity(""); setSuggestions([]); setShowSuggestions(false); setSelectedSuggestion(null); };
 
     // Autocomplete suggestions
     const [suggestions, setSuggestions] = useState<CitySuggestion[]>([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
+    const [selectedSuggestion, setSelectedSuggestion] = useState<CitySuggestion | null>(null);
     const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     useEffect(() => () => { if (debounceRef.current) clearTimeout(debounceRef.current); }, []);
 
     // Derive active condition + theme based on homeTheme setting
-    const { activeTheme, activeCondition } = useMemo(() => {
+    const { activeTheme, activeCondition, activeNight } = useMemo(() => {
         let condition: string;
         let sourceWeather: typeof locationWeather | undefined;
         if (homeTheme === "location") {
@@ -117,7 +120,7 @@ export default function HomeScreen({ navigation }: Props) {
             sourceWeather = first;
         }
         const night = isNightTime(sourceWeather?.sunrise ?? null, sourceWeather?.sunset ?? null);
-        return { activeTheme: themeForCondition(condition as any, night), activeCondition: condition };
+        return { activeTheme: themeForCondition(condition as any, night), activeCondition: condition, activeNight: night };
     }, [cities, weatherMap, locationWeather, homeTheme, fixedTheme]);
 
     // Load all settings on focus
@@ -169,31 +172,44 @@ export default function HomeScreen({ navigation }: Props) {
         const trimmed = newCity.trim();
         if (!trimmed) return;
 
-        // Hide suggestions once we commit to adding
         setShowSuggestions(false);
         setSuggestions([]);
 
-        // If the user didn't tap a suggestion, resolve to the first match
-        let city = trimmed;
-        const alreadyFormatted = suggestions.some((s) => s.label === trimmed);
-        if (!alreadyFormatted) {
-            const fetched = suggestions.length > 0 ? suggestions : await fetchCitySuggestions(trimmed);
-            if (fetched.length > 0) city = fetched[0].label;
+        let weatherResult;
+        let cityName: string;
+
+        if (selectedSuggestion) {
+            // Use lat/lon from the suggestion — always works
+            try {
+                weatherResult = await fetchCurrentWeatherByCoords(selectedSuggestion.lat, selectedSuggestion.lon);
+                cityName = weatherResult.city;
+            } catch {
+                showError("City not found. Check spelling and try again.");
+                return;
+            }
+        } else {
+            // Free-text fallback: try geocoding first
+            try {
+                const fetched = await fetchCitySuggestions(trimmed);
+                if (fetched.length > 0) {
+                    weatherResult = await fetchCurrentWeatherByCoords(fetched[0].lat, fetched[0].lon);
+                    cityName = weatherResult.city;
+                } else {
+                    showError("City not found. Check spelling and try again.");
+                    return;
+                }
+            } catch {
+                showError("City not found. Check spelling and try again.");
+                return;
+            }
         }
 
-        if (cities.some((c) => c.toLowerCase() === city.toLowerCase())) {
+        if (cities.some((c) => c.toLowerCase() === cityName.toLowerCase())) {
             showError("That city is already in your list.");
             return;
         }
 
-        try {
-            await fetchCurrentWeather(city);
-        } catch {
-            showError("City not found. Check spelling and try again.");
-            return;
-        }
-
-        const { error } = await insertCity(city);
+        const { error } = await insertCity(cityName);
 
         if (error) {
             console.warn(error);
@@ -205,10 +221,10 @@ export default function HomeScreen({ navigation }: Props) {
             return;
         }
 
-        setCities([city, ...cities]);
+        setCities([cityName, ...cities]);
         setNewCity("");
-        showSuccess(`Added ${city}.`);
-        setTimeout(() => { setShowInput(false); setSuggestions([]); setShowSuggestions(false); }, 1000);
+        showSuccess(`Added ${cityName}.`);
+        setTimeout(() => { setShowInput(false); setSuggestions([]); setShowSuggestions(false); setSelectedSuggestion(null); }, 1000);
     };
 
     const removeCity = async (city: string) => {
@@ -240,7 +256,7 @@ export default function HomeScreen({ navigation }: Props) {
 
             <View style={styles.greetingRow}>
                 <Text style={[styles.greeting, { color: activeTheme.text }]}>{getGreeting()}</Text>
-                <Pressable onPress={() => navigation.navigate("Settings", { condition: activeCondition })} hitSlop={8}>
+                <Pressable onPress={() => navigation.navigate("Settings", { condition: activeCondition, isNight: activeNight })} hitSlop={8}>
                     <Ionicons name="settings-outline" size={22} color={activeTheme.accent} />
                 </Pressable>
             </View>
@@ -251,6 +267,9 @@ export default function HomeScreen({ navigation }: Props) {
                     <Text style={[styles.locationCity, { color: activeTheme.text }]}>
                         {locationWeather.city}, {locationWeather.country}
                     </Text>
+                    {locationLocalTime ? (
+                        <Text style={[styles.locationTime, { color: activeTheme.subtleText }]}>{locationLocalTime}</Text>
+                    ) : null}
                     <Text style={[styles.locationTemp, { color: tempColor(locationWeather.tempC) }]}>
                         {formatTemp(locationWeather.tempC, locationWeather.tempF, unit)}
                     </Text>
@@ -303,9 +322,14 @@ export default function HomeScreen({ navigation }: Props) {
                     style={styles.modalOverlay}
                     behavior={Platform.OS === "ios" ? "padding" : "height"}
                 >
-                    <Pressable style={styles.modalBackdrop} onPress={closeModal} />
+                    <Pressable style={styles.modalBackdrop} onPress={closeModal} pointerEvents="box-only" />
                     <View style={[styles.modalSheet, { backgroundColor: activeTheme.background }]}>
-                        <Text style={[styles.modalTitle, { color: activeTheme.text }]}>Add a City</Text>
+                        <View style={styles.modalHeader}>
+                            <Text style={[styles.modalTitle, { color: activeTheme.text }]}>Add a City</Text>
+                            <Pressable onPress={closeModal} hitSlop={8}>
+                                <Ionicons name="close" size={24} color={activeTheme.text} />
+                            </Pressable>
+                        </View>
                         {status && (
                             <Text style={[styles.status, status.type === "error" ? styles.statusError : styles.statusSuccess]}>
                                 {status.text}
@@ -321,6 +345,7 @@ export default function HomeScreen({ navigation }: Props) {
                                 autoFocus
                                 onChangeText={(t) => {
                                     setNewCity(t);
+                                    setSelectedSuggestion(null);
                                     clearStatus();
                                     if (debounceRef.current) clearTimeout(debounceRef.current);
                                     const q = t.trim();
@@ -347,6 +372,7 @@ export default function HomeScreen({ navigation }: Props) {
                                         style={styles.suggestRow}
                                         onPress={() => {
                                             setNewCity(s.label);
+                                            setSelectedSuggestion(s);
                                             setShowSuggestions(false);
                                             setSuggestions([]);
                                         }}
@@ -383,6 +409,7 @@ export default function HomeScreen({ navigation }: Props) {
                             unit={unit}
                             cardColor={activeTheme.card}
                             textColor={activeTheme.text}
+                            subtleTextColor={activeTheme.subtleText}
                             onOpen={() => navigation.navigate("WeatherDetail", { city: item })}
                             onRemove={() => removeCity(item)}
                         />
@@ -425,6 +452,7 @@ const styles = StyleSheet.create({
         borderColor: "rgba(128,128,128,0.25)",
     },
     locationCity: { fontSize: 15, fontWeight: "600", marginBottom: 2, textAlign: "center" },
+    locationTime: { fontSize: 12, fontWeight: "500", opacity: 0.7, marginBottom: 2, textAlign: "center" },
     locationTemp: { fontSize: 72, fontWeight: "200", marginBottom: 2, textAlign: "center", letterSpacing: -2 },
     locationFeelsLike: { fontSize: 13, opacity: 0.7, textAlign: "center" },
 
@@ -481,5 +509,6 @@ const styles = StyleSheet.create({
         flex: 1,
         marginTop: 60,
     },
+    modalHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
     modalTitle: { fontSize: 18, fontWeight: "800", marginBottom: 4 },
 });

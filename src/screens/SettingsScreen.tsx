@@ -50,7 +50,7 @@ export default function SettingsScreen({ route, navigation }: Props) {
 
     const themeCondition =
         settings.homeTheme === "fixed" ? settings.fixedTheme : route.params.condition;
-    const theme = themeForCondition(themeCondition as any);
+    const theme = themeForCondition(themeCondition as any, route.params.isNight);
 
     return (
         <View style={[styles.container, { backgroundColor: theme.background }]}>
@@ -61,7 +61,7 @@ export default function SettingsScreen({ route, navigation }: Props) {
                 hitSlop={8}
                 style={[styles.backBtn, { top: insets.top + 12 }]}
             >
-                <Ionicons name="chevron-back" size={26} color={theme.accent} />
+                <Ionicons name="chevron-back" size={26} color={theme.text} />
             </Pressable>
 
             <ScrollView
@@ -166,7 +166,7 @@ const styles = StyleSheet.create({
 
     h1: { fontSize: 26, fontWeight: "900", marginBottom: 4 },
 
-    card: { borderRadius: 18, padding: 16, gap: 12 },
+    card: { borderRadius: 18, padding: 16, gap: 12, borderWidth: 1, borderColor: "rgba(128,128,128,0.25)" },
     sectionLabel: { fontSize: 11, fontWeight: "700", textTransform: "uppercase", letterSpacing: 0.8 },
 
     // Unit toggle

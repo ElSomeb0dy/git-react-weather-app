@@ -3,5 +3,5 @@ export type RootStackParamList = {
     Login: undefined;
     Home: undefined;
     WeatherDetail: { city: string };
-    Settings: { condition: string };
+    Settings: { condition: string; isNight: boolean };
 };
