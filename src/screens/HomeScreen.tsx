@@ -26,6 +26,7 @@ import {
     Image,
     ActivityIndicator,
     Alert,
+    RefreshControl,
 } from "react-native";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Home">;
@@ -47,6 +48,7 @@ export default function HomeScreen({ navigation }: Props) {
     const [homeTheme, setHomeTheme] = useState<HomeThemeMode>("top");
     const [fixedTheme, setFixedTheme] = useState("Clouds");
     const [showModal, setShowModal] = useState(false);
+    const [refreshing, setRefreshing] = useState(false);
 
     const [status, setStatus] = useState<{ type: "error" | "success"; text: string } | null>(null);
     const showError = (text: string) => setStatus({ type: "error", text });
@@ -128,6 +130,23 @@ export default function HomeScreen({ navigation }: Props) {
             });
             setWeatherMap(Object.fromEntries(entries));
         })();
+    }, [cities]);
+
+    const refreshWeather = useCallback(async () => {
+        setRefreshing(true);
+        const results = await Promise.allSettled(
+            cities.map((c) =>
+                c.lat != null && c.lon != null
+                    ? fetchCurrentWeatherByCoords(c.lat, c.lon)
+                    : fetchCurrentWeather(c.city)
+            )
+        );
+        const entries: Array<[string, CurrentWeather]> = [];
+        results.forEach((result, i) => {
+            if (result.status === "fulfilled") entries.push([cities[i].city, result.value]);
+        });
+        setWeatherMap(Object.fromEntries(entries));
+        setRefreshing(false);
     }, [cities]);
 
     const removeCity = async (city: string) => {
@@ -241,6 +260,8 @@ export default function HomeScreen({ navigation }: Props) {
                 data={cities}
                 keyExtractor={(item) => item.city}
                 contentContainerStyle={{ gap: 10, paddingVertical: 12 }}
+                refreshing={refreshing}
+                onRefresh={refreshWeather}
                 keyboardShouldPersistTaps="handled"
                 renderItem={({ item }) => (
                     <CityRow

@@ -24,7 +24,7 @@ async function fetchGroqInsight(weather: CurrentWeather, forecast: ForecastDay[]
     const prompt =
         `Weather in ${city}, ${country}: ${Math.round(tempC)}°C (feels like ${Math.round(feelsLikeC)}°C), ` +
         `${description}, humidity ${humidity}%, wind ${windSpeed} m/s.${forecastLine}\n\n` +
-        `Write a short, casual 2-sentence weather summary. No tips, no markdown, keep it under 30 words.`;
+        `Write a short, casual 2-sentence weather summary followed by a one-line clothing suggestion. No markdown, keep it under 40 words total.`;
 
     const res = await fetch(GROQ_URL, {
         method: "POST",
@@ -32,7 +32,7 @@ async function fetchGroqInsight(weather: CurrentWeather, forecast: ForecastDay[]
         body: JSON.stringify({
             model: GROQ_MODEL,
             messages: [{ role: "user", content: prompt }],
-            max_tokens: 60,
+            max_tokens: 80,
             temperature: 0.8,
         }),
     });
