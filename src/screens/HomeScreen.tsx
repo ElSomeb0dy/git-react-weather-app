@@ -16,6 +16,7 @@ import { themeForCondition, isNightTime } from "../theme/weatherTheme";
 import CityRow from "../components/CityRow";
 import { getCities, deleteCity, CityEntry } from "../services/cities";
 import { loadSettings, HomeThemeMode } from "../storage/settings";
+import { useStatusMessage } from "../hooks/useStatusMessage";
 import {
     View,
     Text,
@@ -30,6 +31,22 @@ import {
 } from "react-native";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Home">;
+
+async function fetchWeatherForCities(cities: CityEntry[]): Promise<Record<string, CurrentWeather>> {
+    const results = await Promise.allSettled(
+        cities.map((c) =>
+            c.lat != null && c.lon != null
+                ? fetchCurrentWeatherByCoords(c.lat, c.lon)
+                : fetchCurrentWeather(c.city)
+        )
+    );
+    const entries: Array<[string, CurrentWeather]> = [];
+    results.forEach((result, i) => {
+        if (result.status === "fulfilled") entries.push([cities[i].city, result.value]);
+        else console.warn("Weather fetch failed for", cities[i].city, result.reason);
+    });
+    return Object.fromEntries(entries);
+}
 
 function getGreeting(): string {
     const h = new Date().getHours();
@@ -49,16 +66,7 @@ export default function HomeScreen({ navigation }: Props) {
     const [fixedTheme, setFixedTheme] = useState("Clouds");
     const [showModal, setShowModal] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
-
-    const [status, setStatus] = useState<{ type: "error" | "success"; text: string } | null>(null);
-    const showError = (text: string) => setStatus({ type: "error", text });
-    const showSuccess = (text: string) => setStatus({ type: "success", text });
-
-    useEffect(() => {
-        if (!status) return;
-        const t = setTimeout(() => setStatus(null), 1500);
-        return () => clearTimeout(t);
-    }, [status]);
+    const { status, showError, showSuccess } = useStatusMessage();
 
     const { locationWeather, locationSlots } = useLocationWeather();
     const locationLocalTime = useLocalTime(locationWeather?.timezone);
@@ -115,37 +123,12 @@ export default function HomeScreen({ navigation }: Props) {
     }, []);
 
     useEffect(() => {
-        (async () => {
-            const results = await Promise.allSettled(
-                cities.map((c) =>
-                    c.lat != null && c.lon != null
-                        ? fetchCurrentWeatherByCoords(c.lat, c.lon)
-                        : fetchCurrentWeather(c.city)
-                )
-            );
-            const entries: Array<[string, CurrentWeather]> = [];
-            results.forEach((result, i) => {
-                if (result.status === "fulfilled") entries.push([cities[i].city, result.value]);
-                else console.warn("Weather fetch failed for", cities[i].city, result.reason);
-            });
-            setWeatherMap(Object.fromEntries(entries));
-        })();
+        fetchWeatherForCities(cities).then(setWeatherMap);
     }, [cities]);
 
     const refreshWeather = useCallback(async () => {
         setRefreshing(true);
-        const results = await Promise.allSettled(
-            cities.map((c) =>
-                c.lat != null && c.lon != null
-                    ? fetchCurrentWeatherByCoords(c.lat, c.lon)
-                    : fetchCurrentWeather(c.city)
-            )
-        );
-        const entries: Array<[string, CurrentWeather]> = [];
-        results.forEach((result, i) => {
-            if (result.status === "fulfilled") entries.push([cities[i].city, result.value]);
-        });
-        setWeatherMap(Object.fromEntries(entries));
+        setWeatherMap(await fetchWeatherForCities(cities));
         setRefreshing(false);
     }, [cities]);
 

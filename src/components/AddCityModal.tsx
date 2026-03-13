@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useStatusMessage } from "../hooks/useStatusMessage";
 import {
     FlatList,
     KeyboardAvoidingView,
@@ -28,23 +29,16 @@ export default function AddCityModal({ visible, cities, theme, onClose, onCityAd
     const [suggestions, setSuggestions] = useState<CitySuggestion[]>([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [selectedSuggestion, setSelectedSuggestion] = useState<CitySuggestion | null>(null);
-    const [status, setStatus] = useState<{ type: "error" | "success"; text: string } | null>(null);
+    const { status, showError, showSuccess } = useStatusMessage();
     const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     useEffect(() => () => { if (debounceRef.current) clearTimeout(debounceRef.current); }, []);
-
-    useEffect(() => {
-        if (!status) return;
-        const t = setTimeout(() => setStatus(null), 1500);
-        return () => clearTimeout(t);
-    }, [status]);
 
     const reset = () => {
         setNewCity("");
         setSuggestions([]);
         setShowSuggestions(false);
         setSelectedSuggestion(null);
-        setStatus(null);
     };
 
     const handleClose = () => { reset(); onClose(); };
@@ -68,7 +62,7 @@ export default function AddCityModal({ visible, cities, theme, onClose, onCityAd
             } else {
                 const fetched = await fetchCitySuggestions(trimmed);
                 if (fetched.length === 0) {
-                    setStatus({ type: "error", text: "City not found. Check spelling and try again." });
+                    showError("City not found. Check spelling and try again.");
                     return;
                 }
                 cityName = fetched[0].name;
@@ -76,12 +70,12 @@ export default function AddCityModal({ visible, cities, theme, onClose, onCityAd
                 lon = fetched[0].lon;
             }
         } catch {
-            setStatus({ type: "error", text: "City not found. Check spelling and try again." });
+            showError("City not found. Check spelling and try again.");
             return;
         }
 
         if (cities.some((c) => c.toLowerCase() === cityName.toLowerCase())) {
-            setStatus({ type: "error", text: "That city is already in your list." });
+            showError("That city is already in your list.");
             return;
         }
 
@@ -91,11 +85,11 @@ export default function AddCityModal({ visible, cities, theme, onClose, onCityAd
             const msg = (error as any).code === "23505"
                 ? "That city is already in your list."
                 : "Couldn't save city. Please try again.";
-            setStatus({ type: "error", text: msg });
+            showError(msg);
             return;
         }
 
-        setStatus({ type: "success", text: `Added ${cityName}.` });
+        showSuccess(`Added ${cityName}.`);
         onCityAdded({ city: cityName, lat, lon });
         setTimeout(() => { reset(); onClose(); }, 1000);
     };
@@ -131,7 +125,7 @@ export default function AddCityModal({ visible, cities, theme, onClose, onCityAd
                             onChangeText={(t) => {
                                 setNewCity(t);
                                 setSelectedSuggestion(null);
-                                setStatus(null);
+                                // status clears automatically via useStatusMessage
                                 if (debounceRef.current) clearTimeout(debounceRef.current);
                                 const q = t.trim();
                                 if (q.length < 2) { setSuggestions([]); setShowSuggestions(false); return; }

@@ -4,7 +4,7 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useFocusEffect } from "@react-navigation/native";
 import { RootStackParamList } from "../navigation/types";
 import { fetchCurrentWeather, fetchCurrentWeatherByCoords, fetchForecast, fetchForecastByCoords } from "../services/openWeather";
-import { formatTemp } from "../utils/format";
+import { formatTemp, formatTime } from "../utils/format";
 import { useLocalTime } from "../hooks/useLocalTime";
 import { CurrentWeather, ForecastDay } from "../types/weather";
 import { themeForCondition, isNightTime } from "../theme/weatherTheme";
@@ -15,9 +15,6 @@ import { Ionicons } from "@expo/vector-icons";
 import { useWeatherInsight } from "../hooks/useWeatherInsight";
 
 type Props = NativeStackScreenProps<RootStackParamList, "WeatherDetail">;
-
-const formatTime = (value: number | null) =>
-    value ? new Date(value).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "--";
 
 const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
