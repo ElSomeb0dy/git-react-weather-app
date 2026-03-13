@@ -5,16 +5,17 @@ A cross-platform weather app built with React Native and Expo. Designed to feel 
 ## Stack
 
 | Layer | Technology |
+|---|---|
 | Framework | React Native + Expo (TypeScript) |
 | Auth & DB | Supabase |
 | Weather Data | OpenWeatherMap API |
-| AI Insights | Groq API |
+| AI Insights | Groq API (llama-3.1-8b-instant) |
 
 ## Highlights
 
-- **AI weather insights** — Groq generates simple summary, cached in AsyncStorage for 1 hour to avoid redundant calls
-- **Coordinate-based city lookup** — autocomplete resolves cities to lat/lon upfront, so weather fetches are more accurate
-- **Dynamic theming** — colour scheme adapts to weather condition (Clear, Rain etc) and switches between day/night theme based on city times
+- **AI weather insights** — Groq generates a casual weather summary + clothing suggestion per city, cached for 1 hour to avoid redundant calls
+- **Coordinate-based city lookup** — autocomplete resolves cities to lat/lon upfront, so weather fetches are always accurate
+- **Dynamic theming** — colour scheme adapts to weather condition and switches between day/night based on the city's actual sunrise/sunset times
 - **GPS location card** — detects current location and shows live weather with an hourly forecast scroll
 - **Multi-city management** — save cities, view details, swipe to remove, pull to refresh
 - **Unit tests** — covers API parsing, temperature logic, auth flows, storage, and theming
@@ -23,9 +24,9 @@ A cross-platform weather app built with React Native and Expo. Designed to feel 
 
 **1. API Keys**
 
-- https://openweathermap.org/api — free tier is enough
-- https://supabase.com — create a project, grab the URL and anon key
-- https://console.groq.com — free tier, used for AI insights (optional)
+- [OpenWeatherMap](https://openweathermap.org/api) — free tier is enough
+- [Supabase](https://supabase.com) — create a project, grab the URL and anon key
+- [Groq](https://console.groq.com) — free tier, used for AI insights (optional)
 
 **2. Supabase table**
 
@@ -50,17 +51,14 @@ OPENWEATHER_API_KEY=your_key_here
 SUPABASE_URL=your_supabase_url
 SUPABASE_ANON_KEY=your_anon_key
 GROQ_API_KEY=your_groq_key_here
-
 ```
 
 **4. Run**
 
-```
+```bash
 npm install
 npx expo start
-
-npm test for testing
-
+npm test        # run tests
 ```
 
-> Full details in DOCS.md
+> Full implementation details in [DOCS.md](DOCS.md)
