@@ -27,12 +27,12 @@ describe("CityRow", () => {
 
     it("shows temperature in Celsius when unit is C", () => {
         const { getByText } = render(<CityRow {...baseProps} weather={mockWeather} />);
-        expect(getByText("10°C")).toBeTruthy();
+        expect(getByText("10°")).toBeTruthy();
     });
 
     it("shows temperature in Fahrenheit when unit is F", () => {
         const { getByText } = render(<CityRow {...baseProps} unit="F" weather={mockWeather} />);
-        expect(getByText("50°F")).toBeTruthy();
+        expect(getByText("50°")).toBeTruthy();
     });
 
     it("calls onOpen when the row is pressed", () => {

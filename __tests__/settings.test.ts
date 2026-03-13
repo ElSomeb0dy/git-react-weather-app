@@ -7,7 +7,7 @@ describe("loadSettings", () => {
     it("returns default settings when nothing is stored", async () => {
         (AsyncStorage.getItem as jest.Mock).mockResolvedValue(null);
         const settings = await loadSettings();
-        expect(settings).toEqual({ unit: "C" });
+        expect(settings).toEqual({ unit: "C", homeTheme: "top", fixedTheme: "Clouds" });
     });
 
     it("returns stored settings when present", async () => {
@@ -19,13 +19,13 @@ describe("loadSettings", () => {
     it("merges stored settings with defaults (handles partial saves)", async () => {
         (AsyncStorage.getItem as jest.Mock).mockResolvedValue(JSON.stringify({}));
         const settings = await loadSettings();
-        expect(settings).toEqual({ unit: "C" });
+        expect(settings).toEqual({ unit: "C", homeTheme: "top", fixedTheme: "Clouds" });
     });
 
     it("returns defaults when stored JSON is corrupt", async () => {
         (AsyncStorage.getItem as jest.Mock).mockResolvedValue("not-valid-json{{");
         const settings = await loadSettings();
-        expect(settings).toEqual({ unit: "C" });
+        expect(settings).toEqual({ unit: "C", homeTheme: "top", fixedTheme: "Clouds" });
     });
 });
 

@@ -75,13 +75,14 @@ export async function fetchCitySuggestions(query: string, limit = 5): Promise<Ci
     });
 
     const seenCoord = new Set<string>();
+    const seenLabel = new Set<string>();
     const out: CitySuggestion[] = [];
 
     for (const s of raw) {
-        // Round to 2dp to catch near-duplicate coordinates from the API
         const coordKey = `${s.lat.toFixed(2)},${s.lon.toFixed(2)}`;
-        if (seenCoord.has(coordKey)) continue;
+        if (seenCoord.has(coordKey) || seenLabel.has(s.label)) continue;
         seenCoord.add(coordKey);
+        seenLabel.add(s.label);
         out.push(s);
     }
 
