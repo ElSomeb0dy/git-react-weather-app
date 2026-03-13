@@ -13,9 +13,9 @@ A cross-platform weather app built with React Native and Expo. Designed to feel 
 
 ## Highlights
 
-- **AI weather insights** — Groq generates a casual weather summary + clothing suggestion per city, cached for 1 hour to avoid redundant calls
-- **Coordinate-based city lookup** — autocomplete resolves cities to lat/lon upfront, so weather fetches are always accurate
-- **Dynamic theming** — colour scheme adapts to weather condition and switches between day/night based on the city's actual sunrise/sunset times
+- **AI weather insights** — Groq generates a casual weather summary + clothing suggestion per city, cached to avoid redundant calls
+- **Coordinate-based city lookup** — autocomplete resolves cities to lat/lon upfront, so weather fetches are accurate
+- **Dynamic theming** — colour scheme adapts to weather condition and includes day/night based on the city's actual sunrise/sunset times
 - **GPS location card** — detects current location and shows live weather with an hourly forecast scroll
 - **Multi-city management** — save cities, view details, swipe to remove, pull to refresh
 - **Unit tests** — covers API parsing, temperature logic, auth flows, storage, and theming
