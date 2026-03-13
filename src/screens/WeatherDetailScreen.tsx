@@ -12,6 +12,7 @@ import { loadSettings } from "../storage/settings";
 import ThemeBackground from "../components/ThemeBackground";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import { useWeatherInsight } from "../hooks/useWeatherInsight";
 
 type Props = NativeStackScreenProps<RootStackParamList, "WeatherDetail">;
 
@@ -27,6 +28,7 @@ export default function WeatherDetailScreen({ route, navigation }: Props) {
     const [forecast, setForecast] = useState<ForecastDay[]>([]);
     const [unit, setUnit] = useState<"C" | "F">("C");
     const [loading, setLoading] = useState(true);
+    const { insight, loading: insightLoading } = useWeatherInsight(weather, forecast);
 
     const loadWeather = async () => {
         setLoading(true);
@@ -130,6 +132,25 @@ export default function WeatherDetailScreen({ route, navigation }: Props) {
                         <Text style={[styles.heroTime, { color: theme.subtleText }]}>{localTime}</Text>
                     ) : null}
                 </View>
+
+                {/* AI Insight card */}
+                {(insight || insightLoading) && (
+                    <View style={[styles.card, { backgroundColor: theme.card }]}>
+                        <View style={styles.insightHeader}>
+                            <Text style={[styles.cardLabel, { color: theme.subtleText }]}>AI Insight</Text>
+                            {insight && (
+                                <Text style={[styles.insightBadge, { color: theme.subtleText }]}>
+                                    {insight.source === "ai" ? "Groq" : "local"}
+                                </Text>
+                            )}
+                        </View>
+                        {insightLoading ? (
+                            <ActivityIndicator size="small" color={theme.subtleText} style={{ marginVertical: 8 }} />
+                        ) : (
+                            <Text style={[styles.insightText, { color: theme.text }]}>{insight?.text}</Text>
+                        )}
+                    </View>
+                )}
 
                 {/* Stats card */}
                 <View style={[styles.card, { backgroundColor: theme.card }]}>
@@ -235,6 +256,10 @@ const styles = StyleSheet.create({
     statItem: { width: "33.33%", alignItems: "center", paddingVertical: 10 },
     statLabel: { fontSize: 11, fontWeight: "600", opacity: 0.7, marginBottom: 4 },
     statValue: { fontSize: 15, fontWeight: "800", textAlign: "center" },
+
+    insightHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "baseline", marginBottom: 6 },
+    insightBadge: { fontSize: 10, fontWeight: "600", opacity: 0.6 },
+    insightText: { fontSize: 14, fontWeight: "500", lineHeight: 20 },
 
     updatedText: { fontSize: 11, textAlign: "center", opacity: 0.6 },
 
