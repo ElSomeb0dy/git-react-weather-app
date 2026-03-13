@@ -156,6 +156,7 @@ export default function HomeScreen({ navigation }: Props) {
         <View style={[styles.container, { backgroundColor: activeTheme.background, paddingTop: insets.top + 16 }]}>
             <ThemeBackground theme={activeTheme} />
 
+            {/* Header */}
             <View style={styles.greetingRow}>
                 <Text style={[styles.greeting, { color: activeTheme.text }]}>{getGreeting()}</Text>
                 <Pressable onPress={() => navigation.navigate("Settings", { locationCondition, locationIsNight, topCondition, topIsNight })} hitSlop={8}>
@@ -171,6 +172,7 @@ export default function HomeScreen({ navigation }: Props) {
                 </View>
             )}
 
+            {/* Location card */}
             {locationWeather && (
                 <View style={[styles.locationCard, { backgroundColor: activeTheme.card }]}>
                     <Ionicons name="location-outline" size={20} color={activeTheme.text} />
@@ -234,6 +236,7 @@ export default function HomeScreen({ navigation }: Props) {
                 }}
             />
 
+            {/* City list */}
             <View style={styles.rowBetween}>
                 <Text style={[styles.h2, { color: activeTheme.text }]}>Locations</Text>
                 <Pressable onPress={() => setShowModal(true)}>

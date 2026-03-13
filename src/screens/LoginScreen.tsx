@@ -111,6 +111,7 @@ export default function LoginScreen({ navigation }: Props) {
             keyboardVerticalOffset={Platform.OS === "ios" ? 40 : 0}
         >
             <ScrollView contentContainerStyle={styles.screen} keyboardShouldPersistTaps="handled">
+                {/* Hero */}
                 <View style={styles.header}>
                     <View style={styles.sun}>
                         {Array.from({ length: 8 }).map((_, i) => (
@@ -129,6 +130,7 @@ export default function LoginScreen({ navigation }: Props) {
                     </View>
                 </View>
 
+                {/* Auth card */}
                 <View style={styles.card}>
                     <Text style={styles.cardTitle}>Sign in</Text>
 

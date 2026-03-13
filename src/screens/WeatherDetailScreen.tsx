@@ -119,7 +119,7 @@ export default function WeatherDetailScreen({ route, navigation }: Props) {
                 contentContainerStyle={[styles.scroll, { paddingTop: insets.top + 52 }]}
                 showsVerticalScrollIndicator={false}
             >
-                {/* Hero on background */}
+                {/* Hero */}
                 <View style={styles.hero}>
                     <Text style={[styles.cityName, { color: theme.text }]}>
                         {city}, {weather.country}
@@ -133,7 +133,7 @@ export default function WeatherDetailScreen({ route, navigation }: Props) {
                     ) : null}
                 </View>
 
-                {/* AI Insight card */}
+                {/* AI insight card */}
                 {(insight || insightLoading) && (
                     <View style={[styles.card, { backgroundColor: theme.card }]}>
                         <View style={styles.insightHeader}>

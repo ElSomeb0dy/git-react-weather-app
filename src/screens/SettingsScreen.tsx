@@ -77,7 +77,7 @@ export default function SettingsScreen({ route, navigation }: Props) {
             >
                 <Text style={[styles.h1, { color: theme.text }]}>Settings</Text>
 
-                {/* Temperature Unit */}
+                {/* Temperature unit */}
                 <View style={[styles.card, { backgroundColor: theme.card }]}>
                     <Text style={[styles.sectionLabel, { color: theme.subtleText }]}>Temperature Unit</Text>
                     <View style={styles.segmentRow}>
@@ -103,7 +103,7 @@ export default function SettingsScreen({ route, navigation }: Props) {
                     </View>
                 </View>
 
-                {/* Home Page Theme */}
+                {/* Home theme picker */}
                 <View style={[styles.card, { backgroundColor: theme.card }]}>
                     <Text style={[styles.sectionLabel, { color: theme.subtleText }]}>Home Page Theme</Text>
 
@@ -149,7 +149,7 @@ export default function SettingsScreen({ route, navigation }: Props) {
                     )}
                 </View>
 
-                {/* Log out */}
+                {/* Logout */}
                 <Pressable style={styles.logout} onPress={logout}>
                     <Ionicons name="log-out-outline" size={18} color="#fff" />
                     <Text style={styles.logoutText}>Log out</Text>
