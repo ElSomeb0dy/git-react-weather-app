@@ -164,9 +164,11 @@ export default function HomeScreen({ navigation }: Props) {
             </View>
 
             {status && (
-                <Text style={[styles.status, status.type === "error" ? styles.statusError : styles.statusSuccess]}>
-                    {status.text}
-                </Text>
+                <View style={[styles.statusPill, status.type === "error" ? styles.statusPillError : styles.statusPillSuccess]}>
+                    <Text style={[styles.statusText, status.type === "error" ? styles.statusTextError : styles.statusTextSuccess]}>
+                        {status.text}
+                    </Text>
+                </View>
             )}
 
             {locationWeather && (
@@ -283,9 +285,19 @@ const styles = StyleSheet.create({
     h2: { fontSize: 16, fontWeight: "800" },
     link: { fontWeight: "800" },
 
-    status: { marginTop: 10, textAlign: "center", fontWeight: "800" },
-    statusError: { color: "#DC2626" },
-    statusSuccess: { color: "#16A34A" },
+    statusPill: {
+        alignSelf: "center",
+        marginTop: 10,
+        marginBottom: 6,
+        paddingHorizontal: 14,
+        paddingVertical: 6,
+        borderRadius: 999,
+    },
+    statusPillError: { backgroundColor: "rgba(220,38,38,0.12)" },
+    statusPillSuccess: { backgroundColor: "rgba(22,163,74,0.12)" },
+    statusText: { fontSize: 13, fontWeight: "700", textAlign: "center" },
+    statusTextError: { color: "#DC2626" },
+    statusTextSuccess: { color: "#16A34A" },
 
     locationCard: {
         borderRadius: 16,

@@ -29,6 +29,7 @@ export default function AddCityModal({ visible, cities, theme, onClose, onCityAd
     const [suggestions, setSuggestions] = useState<CitySuggestion[]>([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [selectedSuggestion, setSelectedSuggestion] = useState<CitySuggestion | null>(null);
+    const [adding, setAdding] = useState(false);
     const { status, showError, showSuccess } = useStatusMessage();
     const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -45,7 +46,8 @@ export default function AddCityModal({ visible, cities, theme, onClose, onCityAd
 
     const addCity = async () => {
         const trimmed = newCity.trim();
-        if (!trimmed) return;
+        if (!trimmed || adding) return;
+        setAdding(true);
 
         setShowSuggestions(false);
         setSuggestions([]);
@@ -72,6 +74,8 @@ export default function AddCityModal({ visible, cities, theme, onClose, onCityAd
         } catch {
             showError("City not found. Check spelling and try again.");
             return;
+        } finally {
+            setAdding(false);
         }
 
         if (cities.some((c) => c.toLowerCase() === cityName.toLowerCase())) {
@@ -110,9 +114,11 @@ export default function AddCityModal({ visible, cities, theme, onClose, onCityAd
                     </View>
 
                     {status && (
-                        <Text style={[styles.status, status.type === "error" ? styles.statusError : styles.statusSuccess]}>
-                            {status.text}
-                        </Text>
+                        <View style={[styles.statusPill, status.type === "error" ? styles.statusPillError : styles.statusPillSuccess]}>
+                            <Text style={[styles.statusText, status.type === "error" ? styles.statusTextError : styles.statusTextSuccess]}>
+                                {status.text}
+                            </Text>
+                        </View>
                     )}
 
                     <View style={styles.row}>
@@ -140,8 +146,8 @@ export default function AddCityModal({ visible, cities, theme, onClose, onCityAd
                                 }, 400);
                             }}
                         />
-                        <Pressable style={[styles.addBtn, { backgroundColor: theme.accent }]} onPress={addCity}>
-                            <Text style={styles.addBtnText}>Add</Text>
+                        <Pressable style={[styles.addBtn, { backgroundColor: theme.accent, opacity: adding ? 0.5 : 1 }]} onPress={addCity} disabled={adding}>
+                            <Text style={styles.addBtnText}>{adding ? "..." : "Add"}</Text>
                         </Pressable>
                     </View>
 
@@ -187,9 +193,18 @@ const styles = StyleSheet.create({
     header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
     title: { fontSize: 18, fontWeight: "800", marginBottom: 4 },
 
-    status: { marginTop: 10, textAlign: "center", fontWeight: "800" },
-    statusError: { color: "#DC2626" },
-    statusSuccess: { color: "#16A34A" },
+    statusPill: {
+        alignSelf: "center",
+        marginTop: 10,
+        paddingHorizontal: 14,
+        paddingVertical: 6,
+        borderRadius: 999,
+    },
+    statusPillError: { backgroundColor: "rgba(220,38,38,0.12)" },
+    statusPillSuccess: { backgroundColor: "rgba(22,163,74,0.12)" },
+    statusText: { fontSize: 13, fontWeight: "700", textAlign: "center" },
+    statusTextError: { color: "#DC2626" },
+    statusTextSuccess: { color: "#16A34A" },
 
     row: { flexDirection: "row", gap: 10 },
     input: { flex: 1, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 12 },

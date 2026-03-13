@@ -16,10 +16,15 @@ export function useWeatherInsight(
         setLoading(true);
         setResult(null);
 
-        getWeatherInsight(weather, forecast)
-            .then((r) => { if (!cancelled) setResult(r); })
-            .catch(() => {})
-            .finally(() => { if (!cancelled) setLoading(false); });
+        (async () => {
+            try {
+                const r = await getWeatherInsight(weather, forecast);
+                if (!cancelled) setResult(r);
+            } catch {}
+            finally {
+                if (!cancelled) setLoading(false);
+            }
+        })();
 
         return () => { cancelled = true; };
     }, [weather?.city, weather?.condition, Math.round(weather?.tempC ?? 0)]);

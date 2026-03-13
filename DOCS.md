@@ -27,7 +27,7 @@ A React Native weather app built with Expo. Users log in, save cities, and view 
   - Close (×) button and backdrop tap to dismiss
 - Pull-to-refresh on the city list to re-fetch all weather data
 - Inline feedback messages (success/error) that auto-dismiss
-- Settings gear icon in the top-right corner
+- Settings gear icon in the top-right corner[text](vscode-webview://0n6btapgjionqv421kc76cpfvaa4sb5e019l0t5an0dbar3uc171/index.html?id%3Dd1cff96c-2b23-483a-a3d2-a5d14ebe2409%26parentId%3D1%26origin%3Dff486450-8de6-4d46-8a8f-2ed3df1830c3%26swVersion%3D4%26extensionId%3DAnthropic.claude-code%26platform%3Delectron%26vscode-resource-base-authority%3Dvscode-resource.vscode-cdn.net%26parentOrigin%3Dvscode-file%3A%2F%2Fvscode-app%26session%3D18481d5c-42df-46cc-87f4-dcb7d0093e94)
 
 ### Weather Detail Screen
 - Full-screen detail view for any saved city

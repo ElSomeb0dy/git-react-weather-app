@@ -124,7 +124,7 @@ function parseForecast(data: any): ForecastDay[] {
         byDay.get(day)!.push(item);
     }
     const today = new Date().toDateString();
-    const days = [...byDay.entries()].filter(([d]) => d !== today).slice(0, 5);
+    const days = [...byDay.entries()].filter(([d]) => d !== today && byDay.get(d)!.length > 0).slice(0, 5);
     return days.map(([day, slots]) => {
         const temps = slots.map((s: any) => kelvinToC(s.main.temp));
         const minC = round1dp(Math.min(...temps));
@@ -145,14 +145,20 @@ function parseForecast(data: any): ForecastDay[] {
 export async function fetchForecast(city: string): Promise<ForecastDay[]> {
     const url = `${FORECAST}?q=${encodeURIComponent(city)}&appid=${API_KEY}`;
     const res = await fetch(url);
-    if (!res.ok) { const text = await res.text(); throw new Error(`Forecast fetch failed (${res.status}): ${text}`); }
+    if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`Forecast fetch failed (${res.status}): ${text}`);
+    }
     return parseForecast(await res.json());
 }
 
 export async function fetchForecastByCoords(lat: number, lon: number): Promise<ForecastDay[]> {
     const url = `${FORECAST}?lat=${lat}&lon=${lon}&appid=${API_KEY}`;
     const res = await fetch(url);
-    if (!res.ok) { const text = await res.text(); throw new Error(`Forecast fetch failed (${res.status}): ${text}`); }
+    if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`Forecast fetch failed (${res.status}): ${text}`);
+    }
     return parseForecast(await res.json());
 }
 

@@ -32,6 +32,7 @@ A cross-platform weather app built with React Native and Expo. Designed to feel 
 In your Supabase project, create a `user_cities` table:
 
 | Column | Type | Notes |
+|---|---|---|
 | `id` | int8 | primary key |
 | `user_id` | uuid | references `auth.users` |
 | `city` | text | |
