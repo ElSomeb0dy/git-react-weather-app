@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, ActivityIndicator, Image, Pressable, ScrollView
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useFocusEffect } from "@react-navigation/native";
 import { RootStackParamList } from "../navigation/types";
-import { fetchCurrentWeather, fetchForecast } from "../services/openWeather";
+import { fetchCurrentWeather, fetchCurrentWeatherByCoords, fetchForecast, fetchForecastByCoords } from "../services/openWeather";
 import { formatTemp } from "../utils/format";
 import { useLocalTime } from "../hooks/useLocalTime";
 import { CurrentWeather, ForecastDay } from "../types/weather";
@@ -33,7 +33,10 @@ export default function WeatherDetailScreen({ route, navigation }: Props) {
     const loadWeather = async () => {
         setLoading(true);
         try {
-            const [w, f] = await Promise.all([fetchCurrentWeather(city), fetchForecast(city)]);
+            const { lat, lon } = route.params;
+            const [w, f] = await (lat != null && lon != null
+                ? Promise.all([fetchCurrentWeatherByCoords(lat, lon), fetchForecastByCoords(lat, lon)])
+                : Promise.all([fetchCurrentWeather(city), fetchForecast(city)]));
             setWeather(w);
             setForecast(f.slice(0, 5));
         } catch {
@@ -122,7 +125,7 @@ export default function WeatherDetailScreen({ route, navigation }: Props) {
                 {/* Hero on background */}
                 <View style={styles.hero}>
                     <Text style={[styles.cityName, { color: theme.text }]}>
-                        {weather.city}, {weather.country}
+                        {city}, {weather.country}
                     </Text>
                     <Text style={[styles.heroTemp, { color: theme.text }]}>{temp}</Text>
                     <Text style={[styles.heroDesc, { color: theme.subtleText }]}>

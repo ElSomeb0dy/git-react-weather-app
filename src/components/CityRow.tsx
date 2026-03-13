@@ -49,7 +49,7 @@ export default function CityRow({ city, weather, unit, cardColor, textColor, sub
                         )}
                         <View>
                             <Text style={[styles.city, { color: textColor }]}>
-                                {weather ? `${weather.city}, ${weather.country}` : city}
+                                {weather ? `${city}, ${weather.country}` : city}
                             </Text>
                             {localTime ? (
                                 <Text style={[styles.localTime, { color: subtleTextColor }]}>{localTime}</Text>

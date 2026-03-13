@@ -6,7 +6,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { RootStackParamList } from "../navigation/types";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { fetchCurrentWeather } from "../services/openWeather";
+import { fetchCurrentWeather, fetchCurrentWeatherByCoords } from "../services/openWeather";
 import { CurrentWeather } from "../types/weather";
 import { tempColor } from "../utils/tempColor";
 import { formatTemp } from "../utils/format";
@@ -14,7 +14,7 @@ import { useLocalTime } from "../hooks/useLocalTime";
 import { useLocationWeather } from "../hooks/useLocationWeather";
 import { themeForCondition, isNightTime } from "../theme/weatherTheme";
 import CityRow from "../components/CityRow";
-import { getCities, deleteCity } from "../services/cities";
+import { getCities, deleteCity, CityEntry } from "../services/cities";
 import { loadSettings, HomeThemeMode } from "../storage/settings";
 import {
     View,
@@ -40,7 +40,7 @@ function getGreeting(): string {
 
 export default function HomeScreen({ navigation }: Props) {
     const insets = useSafeAreaInsets();
-    const [cities, setCities] = useState<string[]>([]);
+    const [cities, setCities] = useState<CityEntry[]>([]);
     const [loading, setLoading] = useState(true);
     const [weatherMap, setWeatherMap] = useState<Record<string, CurrentWeather>>({});
     const [unit, setUnit] = useState<"C" | "F">("C");
@@ -48,7 +48,6 @@ export default function HomeScreen({ navigation }: Props) {
     const [fixedTheme, setFixedTheme] = useState("Clouds");
     const [showModal, setShowModal] = useState(false);
 
-    // On-screen feedback
     const [status, setStatus] = useState<{ type: "error" | "success"; text: string } | null>(null);
     const showError = (text: string) => setStatus({ type: "error", text });
     const showSuccess = (text: string) => setStatus({ type: "success", text });
@@ -62,7 +61,6 @@ export default function HomeScreen({ navigation }: Props) {
     const { locationWeather, locationSlots } = useLocationWeather();
     const locationLocalTime = useLocalTime(locationWeather?.timezone);
 
-    // Derive active condition + theme based on homeTheme setting
     const { activeTheme, locationCondition, locationIsNight, topCondition, topIsNight } = useMemo(() => {
         let condition: string;
         let sourceWeather: typeof locationWeather | undefined;
@@ -72,12 +70,12 @@ export default function HomeScreen({ navigation }: Props) {
         } else if (homeTheme === "fixed") {
             condition = fixedTheme;
         } else {
-            const first = cities.length > 0 ? weatherMap[cities[0]] : undefined;
+            const first = cities.length > 0 ? weatherMap[cities[0].city] : undefined;
             condition = first?.condition ?? "Clouds";
             sourceWeather = first;
         }
         const nightFor = (w?: CurrentWeather | null) => isNightTime(w?.sunrise ?? null, w?.sunset ?? null);
-        const topWeather = cities.length > 0 ? weatherMap[cities[0]] : undefined;
+        const topWeather = cities.length > 0 ? weatherMap[cities[0].city] : undefined;
         return {
             activeTheme: themeForCondition(condition as any, nightFor(sourceWeather)),
             locationCondition: locationWeather?.condition ?? "Clouds",
@@ -87,7 +85,6 @@ export default function HomeScreen({ navigation }: Props) {
         };
     }, [cities, weatherMap, locationWeather, homeTheme, fixedTheme]);
 
-    // Load all settings on focus
     useFocusEffect(
         useCallback(() => {
             loadSettings().then((s) => {
@@ -98,7 +95,6 @@ export default function HomeScreen({ navigation }: Props) {
         }, [])
     );
 
-    // Load user's cities from Supabase on mount
     useEffect(() => {
         (async () => {
             setLoading(true);
@@ -111,19 +107,24 @@ export default function HomeScreen({ navigation }: Props) {
                 setLoading(false);
                 return;
             }
-            setCities((data ?? []).map((r) => r.city));
+            setCities(data ?? []);
             setLoading(false);
         })();
     }, []);
 
-    // Fetch weather for all cities whenever the list changes
     useEffect(() => {
         (async () => {
-            const results = await Promise.allSettled(cities.map((c) => fetchCurrentWeather(c)));
+            const results = await Promise.allSettled(
+                cities.map((c) =>
+                    c.lat != null && c.lon != null
+                        ? fetchCurrentWeatherByCoords(c.lat, c.lon)
+                        : fetchCurrentWeather(c.city)
+                )
+            );
             const entries: Array<[string, CurrentWeather]> = [];
             results.forEach((result, i) => {
-                if (result.status === "fulfilled") entries.push([cities[i], result.value]);
-                else console.warn("Weather fetch failed for", cities[i], result.reason);
+                if (result.status === "fulfilled") entries.push([cities[i].city, result.value]);
+                else console.warn("Weather fetch failed for", cities[i].city, result.reason);
             });
             setWeatherMap(Object.fromEntries(entries));
         })();
@@ -137,7 +138,7 @@ export default function HomeScreen({ navigation }: Props) {
             showError("Couldn't remove that city.");
             return;
         }
-        setCities((prev) => prev.filter((c) => c !== city));
+        setCities((prev) => prev.filter((c) => c.city !== city));
         showSuccess(`Removed ${city}.`);
     };
 
@@ -220,12 +221,12 @@ export default function HomeScreen({ navigation }: Props) {
 
             <AddCityModal
                 visible={showModal}
-                cities={cities}
+                cities={cities.map((c) => c.city)}
                 theme={activeTheme}
                 onClose={() => setShowModal(false)}
-                onCityAdded={(cityName) => {
-                    setCities((prev) => [cityName, ...prev]);
-                    showSuccess(`Added ${cityName}.`);
+                onCityAdded={(entry) => {
+                    setCities((prev) => [entry, ...prev]);
+                    showSuccess(`Added ${entry.city}.`);
                 }}
             />
 
@@ -238,19 +239,24 @@ export default function HomeScreen({ navigation }: Props) {
 
             <FlatList
                 data={cities}
-                keyExtractor={(item) => item}
+                keyExtractor={(item) => item.city}
                 contentContainerStyle={{ gap: 10, paddingVertical: 12 }}
                 keyboardShouldPersistTaps="handled"
                 renderItem={({ item }) => (
                     <CityRow
-                        city={item}
-                        weather={weatherMap[item]}
+                        city={item.city}
+                        weather={weatherMap[item.city]}
                         unit={unit}
                         cardColor={activeTheme.card}
                         textColor={activeTheme.text}
                         subtleTextColor={activeTheme.subtleText}
-                        onOpen={() => navigation.navigate("WeatherDetail", { city: item, background: activeTheme.background })}
-                        onRemove={() => removeCity(item)}
+                        onOpen={() => navigation.navigate("WeatherDetail", {
+                            city: item.city,
+                            background: activeTheme.background,
+                            lat: item.lat ?? undefined,
+                            lon: item.lon ?? undefined,
+                        })}
+                        onRemove={() => removeCity(item.city)}
                     />
                 )}
             />

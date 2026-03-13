@@ -11,7 +11,7 @@ import {
     View,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { fetchCitySuggestions, fetchCurrentWeatherByCoords, CitySuggestion } from "../services/openWeather";
+import { fetchCitySuggestions, CitySuggestion } from "../services/openWeather";
 import { insertCity } from "../services/cities";
 import { Theme } from "../theme/weatherTheme";
 
@@ -20,7 +20,7 @@ interface Props {
     cities: string[];
     theme: Theme;
     onClose: () => void;
-    onCityAdded: (cityName: string) => void;
+    onCityAdded: (entry: { city: string; lat: number; lon: number }) => void;
 }
 
 export default function AddCityModal({ visible, cities, theme, onClose, onCityAdded }: Props) {
@@ -57,19 +57,23 @@ export default function AddCityModal({ visible, cities, theme, onClose, onCityAd
         setSuggestions([]);
 
         let cityName: string;
+        let lat: number;
+        let lon: number;
 
         try {
             if (selectedSuggestion) {
-                const w = await fetchCurrentWeatherByCoords(selectedSuggestion.lat, selectedSuggestion.lon);
-                cityName = w.city;
+                cityName = selectedSuggestion.name;
+                lat = selectedSuggestion.lat;
+                lon = selectedSuggestion.lon;
             } else {
                 const fetched = await fetchCitySuggestions(trimmed);
                 if (fetched.length === 0) {
                     setStatus({ type: "error", text: "City not found. Check spelling and try again." });
                     return;
                 }
-                const w = await fetchCurrentWeatherByCoords(fetched[0].lat, fetched[0].lon);
-                cityName = w.city;
+                cityName = fetched[0].name;
+                lat = fetched[0].lat;
+                lon = fetched[0].lon;
             }
         } catch {
             setStatus({ type: "error", text: "City not found. Check spelling and try again." });
@@ -81,7 +85,7 @@ export default function AddCityModal({ visible, cities, theme, onClose, onCityAd
             return;
         }
 
-        const { error } = await insertCity(cityName);
+        const { error } = await insertCity(cityName, lat, lon);
         if (error) {
             console.warn(error);
             const msg = (error as any).code === "23505"
@@ -92,7 +96,7 @@ export default function AddCityModal({ visible, cities, theme, onClose, onCityAd
         }
 
         setStatus({ type: "success", text: `Added ${cityName}.` });
-        onCityAdded(cityName);
+        onCityAdded({ city: cityName, lat, lon });
         setTimeout(() => { reset(); onClose(); }, 1000);
     };
 
@@ -132,10 +136,14 @@ export default function AddCityModal({ visible, cities, theme, onClose, onCityAd
                                 const q = t.trim();
                                 if (q.length < 2) { setSuggestions([]); setShowSuggestions(false); return; }
                                 debounceRef.current = setTimeout(async () => {
-                                    const list = await fetchCitySuggestions(q);
-                                    setSuggestions(list);
-                                    setShowSuggestions(true);
-                                }, 250);
+                                    try {
+                                        const list = await fetchCitySuggestions(q);
+                                        setSuggestions(list);
+                                        setShowSuggestions(true);
+                                    } catch {
+                                        setSuggestions([]);
+                                    }
+                                }, 400);
                             }}
                         />
                         <Pressable style={[styles.addBtn, { backgroundColor: theme.accent }]} onPress={addCity}>
@@ -151,7 +159,7 @@ export default function AddCityModal({ visible, cities, theme, onClose, onCityAd
                             keyboardShouldPersistTaps="handled"
                             renderItem={({ item: s }) => (
                                 <Pressable
-                                    style={styles.suggestRow}
+                                    style={[styles.suggestRow, { borderTopColor: theme.subtleText }]}
                                     onPress={() => {
                                         setNewCity(s.label);
                                         setSelectedSuggestion(s);
@@ -199,6 +207,5 @@ const styles = StyleSheet.create({
         paddingHorizontal: 12,
         paddingVertical: 10,
         borderTopWidth: StyleSheet.hairlineWidth,
-        borderTopColor: "#D1D5DB",
     },
 });
