@@ -222,14 +222,12 @@ const styles = StyleSheet.create({
 
     scroll: { padding: 16, gap: 14, paddingBottom: 36 },
 
-    // Hero
     hero: { alignItems: "center", paddingVertical: 20 },
     cityName: { fontSize: 20, fontWeight: "700", opacity: 0.85 },
     heroTemp: { fontSize: 72, fontWeight: "500", marginTop: 4, letterSpacing: -2 },
     heroDesc: { fontSize: 16, fontWeight: "500", textTransform: "capitalize" },
     heroTime: { fontSize: 13, fontWeight: "500", marginTop: 4, opacity: 0.7 },
 
-    // Cards
     card: { borderRadius: 18, padding: 16, borderWidth: 1, borderColor: "rgba(128,128,128,0.25)" },
     cardLabel: {
         fontSize: 11,
@@ -239,7 +237,6 @@ const styles = StyleSheet.create({
         marginBottom: 12,
     },
 
-    // Forecast rows
     forecastRow: { flexDirection: "row", alignItems: "center", paddingVertical: 10 },
     dayCol: { width: 52 },
     dayName: { fontSize: 15, fontWeight: "800" },
@@ -251,7 +248,6 @@ const styles = StyleSheet.create({
     maxTemp: { fontSize: 16, fontWeight: "800" },
     minTemp: { fontSize: 13, fontWeight: "600", marginTop: 2 },
 
-    // Stats grid
     statsGrid: { flexDirection: "row", flexWrap: "wrap" },
     statItem: { width: "33.33%", alignItems: "center", paddingVertical: 10 },
     statLabel: { fontSize: 11, fontWeight: "600", opacity: 0.7, marginBottom: 4 },

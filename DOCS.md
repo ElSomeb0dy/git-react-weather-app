@@ -7,9 +7,9 @@ A React Native weather app built with Expo. Users log in, save cities, and view 
 ### Authentication
 - Email and password login via Supabase
 - Account creation from the same screen
-- Forgot password flow (sends reset email)
+- Forgot password button
 - Input validation before any network call (email format, minimum password length)
-- Friendly error messages —> "Incorrect email or password." instead of raw API errors
+- Friendly error messages —> "Incorrect email or password."
 - After login, the back stack is cleared so users can't navigate back to the login screen
 - Logout clears the session and resets navigation to Login
 
@@ -27,7 +27,7 @@ A React Native weather app built with Expo. Users log in, save cities, and view 
   - Close (×) button and backdrop tap to dismiss
 - Pull-to-refresh on the city list to re-fetch all weather data
 - Inline feedback messages (success/error) that auto-dismiss
-- Settings gear icon in the top-right corner[text](vscode-webview://0n6btapgjionqv421kc76cpfvaa4sb5e019l0t5an0dbar3uc171/index.html?id%3Dd1cff96c-2b23-483a-a3d2-a5d14ebe2409%26parentId%3D1%26origin%3Dff486450-8de6-4d46-8a8f-2ed3df1830c3%26swVersion%3D4%26extensionId%3DAnthropic.claude-code%26platform%3Delectron%26vscode-resource-base-authority%3Dvscode-resource.vscode-cdn.net%26parentOrigin%3Dvscode-file%3A%2F%2Fvscode-app%26session%3D18481d5c-42df-46cc-87f4-dcb7d0093e94)
+- Settings gear icon in the top-right corner
 
 ### Weather Detail Screen
 - Full-screen detail view for any saved city
@@ -65,11 +65,6 @@ A React Native weather app built with Expo. Users log in, save cities, and view 
 - All fields parsed: temp, feels like, min/max, humidity, wind, pressure, visibility, sunrise/sunset, timezone offset
 - City weather fetches run in parallel (`Promise.allSettled`) for faster load times
 - API key loaded from environment variables via `expo-constants`
-
-### SDK Compatibility
-- Main branch targets Expo SDK 55
-- `version-fix` branch targets Expo SDK 54 for use with the current Expo Go App Store release
-
 
 ## Bug Fixes & Improvements
 

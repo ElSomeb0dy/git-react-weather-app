@@ -20,6 +20,7 @@ export const mockWeather: CurrentWeather = {
     visibility: 10000,
     sunrise: 1700000000000,
     sunset: 1700040000000,
+    timezone: 3600,
     updatedAt: 1700000000000,
 };
 

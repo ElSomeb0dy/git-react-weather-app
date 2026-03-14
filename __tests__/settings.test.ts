@@ -34,10 +34,10 @@ describe("saveSettings", () => {
 
     it("serializes and writes settings to AsyncStorage", async () => {
         (AsyncStorage.setItem as jest.Mock).mockResolvedValue(undefined);
-        await saveSettings({ unit: "F" });
+        await saveSettings({ unit: "F", homeTheme: "top", fixedTheme: "Clouds" });
         expect(AsyncStorage.setItem).toHaveBeenCalledWith(
             expect.any(String),
-            JSON.stringify({ unit: "F" })
+            JSON.stringify({ unit: "F", homeTheme: "top", fixedTheme: "Clouds" })
         );
     });
 });

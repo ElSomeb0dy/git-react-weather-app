@@ -8,6 +8,7 @@ const baseProps = {
     unit: "C" as const,
     cardColor: "#fff",
     textColor: "#000",
+    subtleTextColor: "#888",
     onOpen: jest.fn(),
     onRemove: jest.fn(),
 };
