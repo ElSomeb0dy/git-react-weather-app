@@ -62,3 +62,7 @@ npm test        # run tests
 ```
 
 > Full implementation details in [DOCS.md](DOCS.md)
+
+## Potential warnings
+
+`npm install` and `npx expo start` will show some warnings. The project targets **Expo SDK 54** to match the version on the App Store / Play Store keeping all packages pinned to SDK 54-compatible versions is what causes these warnings.
