@@ -6,7 +6,7 @@ export default function ThemeBackground({ theme }: { theme: Theme }) {
     if (!theme.decorations?.length) return null;
 
     return (
-        <View pointerEvents="none" style={StyleSheet.absoluteFill}>
+        <View style={[StyleSheet.absoluteFill, { pointerEvents: "none" }]}>
             {theme.decorations.map((d, idx) => {
                 const common: any = {
                     position: "absolute",

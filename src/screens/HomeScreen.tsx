@@ -7,7 +7,7 @@ import { RootStackParamList } from "../navigation/types";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { fetchCurrentWeather, fetchCurrentWeatherByCoords } from "../services/openWeather";
-import { CurrentWeather } from "../types/weather";
+import { CurrentWeather, WeatherCondition } from "../types/weather";
 import { tempColor } from "../utils/tempColor";
 import { formatTemp } from "../utils/format";
 import { useLocalTime } from "../hooks/useLocalTime";
@@ -72,13 +72,13 @@ export default function HomeScreen({ navigation }: Props) {
     const locationLocalTime = useLocalTime(locationWeather?.timezone);
 
     const { activeTheme, locationCondition, locationIsNight, topCondition, topIsNight } = useMemo(() => {
-        let condition: string;
+        let condition: WeatherCondition;
         let sourceWeather: typeof locationWeather | undefined;
         if (homeTheme === "location") {
             condition = locationWeather?.condition ?? "Clouds";
             sourceWeather = locationWeather;
         } else if (homeTheme === "fixed") {
-            condition = fixedTheme;
+            condition = fixedTheme as WeatherCondition;
         } else {
             const first = cities.length > 0 ? weatherMap[cities[0].city] : undefined;
             condition = first?.condition ?? "Clouds";
@@ -87,7 +87,7 @@ export default function HomeScreen({ navigation }: Props) {
         const nightFor = (w?: CurrentWeather | null) => isNightTime(w?.sunrise ?? null, w?.sunset ?? null);
         const topWeather = cities.length > 0 ? weatherMap[cities[0].city] : undefined;
         return {
-            activeTheme: themeForCondition(condition as any, nightFor(sourceWeather)),
+            activeTheme: themeForCondition(condition, nightFor(sourceWeather)),
             locationCondition: locationWeather?.condition ?? "Clouds",
             locationIsNight: nightFor(locationWeather),
             topCondition: topWeather?.condition ?? "Clouds",

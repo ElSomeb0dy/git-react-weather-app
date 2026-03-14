@@ -86,7 +86,7 @@ export default function AddCityModal({ visible, cities, theme, onClose, onCityAd
         const { error } = await insertCity(cityName, lat, lon);
         if (error) {
             console.warn(error);
-            const msg = (error as any).code === "23505"
+            const msg = (error as { code?: string }).code === "23505"
                 ? "That city is already in your list."
                 : "Couldn't save city. Please try again.";
             showError(msg);

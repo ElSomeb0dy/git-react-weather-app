@@ -2,6 +2,12 @@
 
 A cross-platform weather app built with React Native and Expo. Designed to feel polished and production-ready — not a tutorial clone.
 
+## Screenshots
+
+| Home | Weather Detail |
+|---|---|
+| ![Home](assets/demo/home.png) | ![Detail](assets/demo/weatherdetail.png) |
+
 ## Stack
 
 | Layer | Technology |
@@ -57,7 +63,7 @@ GROQ_API_KEY=your_groq_key_here
 
 ```bash
 npm install
-npx expo start
+npx expo start (--tunnel if needed)
 npm test        # run tests
 ```
 

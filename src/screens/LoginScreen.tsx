@@ -12,6 +12,10 @@ import {
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation/types";
 import { signIn, signUp, resetPassword } from "../services/auth";
+import ThemeBackground from "../components/ThemeBackground";
+import { themeForCondition } from "../theme/weatherTheme";
+
+const cloudsTheme = themeForCondition("Clouds");
 
 type Props = NativeStackScreenProps<RootStackParamList, "Login">;
 
@@ -106,10 +110,11 @@ export default function LoginScreen({ navigation }: Props) {
 
     return (
         <KeyboardAvoidingView
-            style={{ flex: 1 }}
+            style={{ flex: 1, backgroundColor: "#DBEAFE" }}
             behavior={Platform.OS === "ios" ? "padding" : undefined}
             keyboardVerticalOffset={Platform.OS === "ios" ? 40 : 0}
         >
+            <ThemeBackground theme={cloudsTheme} />
             <ScrollView contentContainerStyle={styles.screen} keyboardShouldPersistTaps="handled">
                 {/* Hero */}
                 <View style={styles.header}>
@@ -130,9 +135,18 @@ export default function LoginScreen({ navigation }: Props) {
                     </View>
                 </View>
 
+                <View style={styles.feedbackSlot}>
+                    {!!message && (
+                        <Text style={[styles.message, messageType === "error" ? styles.msgErr : styles.msgOk]}>
+                            {message}
+                        </Text>
+                    )}
+                </View>
+
                 {/* Auth card */}
                 <View style={styles.card}>
-                    <Text style={styles.cardTitle}>Sign in</Text>
+                    <Text style={styles.cardTitle}>Welcome</Text>
+                    <Text style={styles.cardSubtitle}>Login or sign up to continue</Text>
 
                     <TextInput
                         style={styles.input}
@@ -182,16 +196,11 @@ export default function LoginScreen({ navigation }: Props) {
                         <Text style={styles.secondaryText}>Create account</Text>
                     </Pressable>
 
-                    <Pressable disabled={submitting} onPress={onForgotPassword}>
-                        <Text style={styles.link}>Forgot password?</Text>
-                    </Pressable>
-
-                    {!!message && (
-                        <Text style={[styles.message, messageType === "error" ? styles.msgErr : styles.msgOk]}>
-                            {message}
-                        </Text>
-                    )}
                 </View>
+
+                <Pressable disabled={submitting} onPress={onForgotPassword}>
+                    <Text style={styles.link}>Forgot password?</Text>
+                </Pressable>
 
                 <Text style={styles.footerNote}>Your saved cities are tied to your account.</Text>
             </ScrollView>
@@ -208,7 +217,9 @@ const styles = StyleSheet.create({
     },
     chipText: { fontWeight: "900", fontSize: 12 },
 
-    screen: { flexGrow: 1, padding: 16, justifyContent: "center", gap: 16, backgroundColor: "#DBEAFE" },
+    screen: { flexGrow: 1, padding: 16, justifyContent: "center", gap: 16, backgroundColor: "transparent" },
+
+    feedbackSlot: { minHeight: 24, alignItems: "center", justifyContent: "center" },
 
     header: { alignItems: "center", marginBottom: 6 },
     sun: { width: 64, height: 64, alignItems: "center", justifyContent: "center", marginBottom: 10 },
@@ -223,8 +234,9 @@ const styles = StyleSheet.create({
     sunCore: { width: 28, height: 28, borderRadius: 14, backgroundColor: "#FBBF24" },
     title: { fontSize: 28, fontWeight: "900", color: "#111827" },
 
-    card: { backgroundColor: "white", borderRadius: 18, padding: 16, gap: 10 },
-    cardTitle: { fontSize: 18, fontWeight: "800", marginBottom: 4 },
+    card: { backgroundColor: "rgba(245,249,255,0.85)", borderRadius: 18, paddingTop: 28, paddingHorizontal: 22, paddingBottom: 48, gap: 10, borderWidth: 1.5, borderColor: "rgba(186,216,255,0.6)", shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 12, elevation: 4 },
+    cardTitle: { fontSize: 18, fontWeight: "800", textAlign: "center" },
+    cardSubtitle: { fontSize: 12, color: "#6B7280", textAlign: "center", marginTop: -6, marginBottom: 26 },
 
     input: {
         borderWidth: 1,
@@ -239,10 +251,10 @@ const styles = StyleSheet.create({
     showBtn: { paddingHorizontal: 12, paddingVertical: 10, borderRadius: 12, backgroundColor: "#F3F4F6" },
     showBtnText: { fontWeight: "800", color: "#111827" },
 
-    primaryBtn: { backgroundColor: "#111827", padding: 14, borderRadius: 12, marginTop: 4 },
+    primaryBtn: { backgroundColor: "#0284C7", padding: 14, borderRadius: 12, marginTop: 4 },
     primaryText: { color: "white", textAlign: "center", fontWeight: "800" },
 
-    secondaryBtn: { backgroundColor: "#374151", padding: 14, borderRadius: 12 },
+    secondaryBtn: { backgroundColor: "#1E3A5F", padding: 14, borderRadius: 12 },
     secondaryText: { color: "white", textAlign: "center", fontWeight: "800" },
 
     link: { color: "#2563EB", textAlign: "center", fontWeight: "700", marginTop: 4 },

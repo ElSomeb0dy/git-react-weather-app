@@ -7,6 +7,7 @@ import { signOut } from "../services/auth";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { themeForCondition } from "../theme/weatherTheme";
+import { WeatherCondition } from "../types/weather";
 import ThemeBackground from "../components/ThemeBackground";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Settings">;
@@ -56,7 +57,7 @@ export default function SettingsScreen({ route, navigation }: Props) {
         settings.homeTheme === "location" ? route.params.locationIsNight :
         settings.homeTheme === "top" ? route.params.topIsNight :
         false;
-    const theme = themeForCondition(themeCondition as any, themeNight);
+    const theme = themeForCondition(themeCondition as WeatherCondition, themeNight);
 
     return (
         <View style={[styles.container, { backgroundColor: theme.background }]}>
@@ -130,7 +131,7 @@ export default function SettingsScreen({ route, navigation }: Props) {
                     {settings.homeTheme === "fixed" && (
                         <View style={styles.fixedPicker}>
                             {FIXED_THEME_OPTIONS.map((opt) => {
-                                const t = themeForCondition(opt.key as any);
+                                const t = themeForCondition(opt.key as WeatherCondition);
                                 const selected = settings.fixedTheme === opt.key;
                                 return (
                                     <Pressable
