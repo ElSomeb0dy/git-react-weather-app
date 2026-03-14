@@ -1,6 +1,6 @@
 # React Weather App
 
-A cross-platform weather app built with React Native and Expo. Designed to feel polished and production-ready — not a tutorial clone.
+A cross-platform weather app built with React Native and Expo.
 
 ## Screenshots
 
@@ -19,20 +19,25 @@ A cross-platform weather app built with React Native and Expo. Designed to feel 
 
 ## Highlights
 
-- **AI weather insights** — Groq generates a casual weather summary + clothing suggestion per city, cached to avoid redundant calls
-- **Coordinate-based city lookup** — autocomplete resolves cities to lat/lon upfront, so weather fetches are accurate
-- **Dynamic theming** — colour scheme adapts to weather condition and includes day/night based on the city's actual sunrise/sunset times
-- **GPS location card** — detects current location and shows live weather with an hourly forecast scroll
-- **Multi-city management** — save cities, view details, swipe to remove, pull to refresh
-- **Unit tests** — covers API parsing, temperature logic, auth flows, storage, and theming
+- **AI weather insights:** AI generates a casual weather summary + clothing suggestion per city, cached to avoid redundant calls
+
+- **Coordinate-based city lookup:** autocomplete resolves cities to lat/lon upfront, so weather fetches are accurate
+
+- **Dynamic theming:** colour scheme adapts to weather condition and includes day/night based on the city's actual sunrise/sunset times
+
+- **GPS location card:** detects current location and shows live weather with an hourly forecast
+
+- **Multi-city management:** save cities, view details, swipe to remove, pull to refresh
+
+- **Unit tests:** covers API parsing, temperature logic, auth flows, storage, and theming
 
 ## Setup
 
 **1. API Keys**
 
-- [OpenWeatherMap](https://openweathermap.org/api) — free tier is enough
-- [Supabase](https://supabase.com) — create a project, grab the URL and anon key
-- [Groq](https://console.groq.com) — free tier, used for AI insights (optional)
+- [OpenWeatherMap](https://openweathermap.org/api): free tier is enough
+- [Supabase](https://supabase.com): create a project, grab the URL and anon key
+- [Groq](https://console.groq.com): free tier, used for AI insights (optional)
 
 **2. Supabase table**
 
@@ -71,4 +76,4 @@ npm test        # run tests
 
 ## Potential warnings
 
-`npm install` and `npx expo start` will show some warnings. The project targets **Expo SDK 54** to match the version on the App Store / Play Store keeping all packages pinned to SDK 54-compatible versions is what causes these warnings.
+`npm install` and `npx expo start` may show some warnings. The project targets **Expo SDK 54** to match the version on the App Store / Play Store keeping all packages pinned to SDK 54-compatible versions is what causes these warnings.
