@@ -1,18 +1,23 @@
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { View, Text, StyleSheet, ActivityIndicator, Image, Pressable, ScrollView } from "react-native";
+
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useFocusEffect } from "@react-navigation/native";
-import { RootStackParamList } from "../navigation/types";
-import { fetchCurrentWeather, fetchCurrentWeatherByCoords, fetchForecast, fetchForecastByCoords } from "../services/openWeather";
-import { formatTemp, formatTime } from "../utils/format";
-import { useLocalTime } from "../hooks/useLocalTime";
-import { CurrentWeather, ForecastDay } from "../types/weather";
-import { themeForCondition, isNightTime } from "../theme/weatherTheme";
-import { loadSettings } from "../storage/settings";
-import ThemeBackground from "../components/ThemeBackground";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+
+import { RootStackParamList } from "../navigation/types";
+import { fetchCurrentWeather, fetchCurrentWeatherByCoords, fetchForecast, fetchForecastByCoords } from "../services/openWeather";
+import { loadSettings } from "../storage/settings";
+
+import { CurrentWeather, ForecastDay } from "../types/weather";
+import { formatTemp, formatTime } from "../utils/display";
+
+import { useLocalTime } from "../hooks/useLocalTime";
 import { useWeatherInsight } from "../hooks/useWeatherInsight";
+
+import { themeForCondition, isNightTime } from "../theme/weatherTheme";
+import ThemeBackground from "../components/ThemeBackground";
 
 type Props = NativeStackScreenProps<RootStackParamList, "WeatherDetail">;
 
@@ -21,10 +26,13 @@ const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 export default function WeatherDetailScreen({ route, navigation }: Props) {
     const insets = useSafeAreaInsets();
     const { city } = route.params;
+
     const [weather, setWeather] = useState<CurrentWeather | null>(null);
     const [forecast, setForecast] = useState<ForecastDay[]>([]);
-    const [unit, setUnit] = useState<"C" | "F">("C");
     const [loading, setLoading] = useState(true);
+
+    const [unit, setUnit] = useState<"C" | "F">("C");
+
     const { insight, loading: insightLoading } = useWeatherInsight(weather, forecast);
 
     const loadWeather = async () => {
@@ -217,6 +225,7 @@ const styles = StyleSheet.create({
     center: { flex: 1, alignItems: "center", justifyContent: "center" },
     container: { flex: 1 },
     backBtn: { position: "absolute", left: 12, zIndex: 10, padding: 4 },
+
     retryBtn: { marginTop: 12, backgroundColor: "#111827", padding: 12, borderRadius: 12 },
     retryText: { color: "white", fontWeight: "800" },
 
@@ -228,7 +237,12 @@ const styles = StyleSheet.create({
     heroDesc: { fontSize: 16, fontWeight: "500", textTransform: "capitalize" },
     heroTime: { fontSize: 13, fontWeight: "500", marginTop: 4, opacity: 0.7 },
 
-    card: { borderRadius: 18, padding: 16, borderWidth: 1, borderColor: "rgba(128,128,128,0.25)" },
+    card: {
+        borderRadius: 18,
+        padding: 16,
+        borderWidth: 1,
+        borderColor: "rgba(128,128,128,0.25)",
+    },
     cardLabel: {
         fontSize: 11,
         fontWeight: "700",
@@ -253,7 +267,12 @@ const styles = StyleSheet.create({
     statLabel: { fontSize: 11, fontWeight: "600", opacity: 0.7, marginBottom: 4 },
     statValue: { fontSize: 15, fontWeight: "800", textAlign: "center" },
 
-    insightHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "baseline", marginBottom: 6 },
+    insightHeader: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "baseline",
+        marginBottom: 6,
+    },
     insightBadge: { fontSize: 10, fontWeight: "600", opacity: 0.6 },
     insightText: { fontSize: 14, fontWeight: "500", lineHeight: 20 },
 

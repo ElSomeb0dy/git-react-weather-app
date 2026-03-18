@@ -162,6 +162,22 @@ export async function fetchForecastByCoords(lat: number, lon: number): Promise<F
     return parseForecast(await res.json());
 }
 
+export async function fetchWeatherForCities(cities: { city: string; lat?: number | null; lon?: number | null }[]): Promise<Record<string, CurrentWeather>> {
+    const results = await Promise.allSettled(
+        cities.map((c) =>
+            c.lat != null && c.lon != null
+                ? fetchCurrentWeatherByCoords(c.lat, c.lon)
+                : fetchCurrentWeather(c.city)
+        )
+    );
+    const entries: Array<[string, CurrentWeather]> = [];
+    results.forEach((result, i) => {
+        if (result.status === "fulfilled") entries.push([cities[i].city, result.value]);
+        else console.warn("Weather fetch failed for", cities[i].city, result.reason);
+    });
+    return Object.fromEntries(entries);
+}
+
 export async function fetchNextSlots(city: string, count = 8): Promise<ForecastSlot[]> {
     const url = `${FORECAST}?q=${encodeURIComponent(city)}&appid=${API_KEY}`;
 

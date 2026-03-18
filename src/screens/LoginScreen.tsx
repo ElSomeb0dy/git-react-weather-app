@@ -1,19 +1,13 @@
 import React, { useState } from "react";
-import {
-    View,
-    Text,
-    TextInput,
-    Pressable,
-    StyleSheet,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-} from "react-native";
+import { View, Text, TextInput, Pressable, StyleSheet, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
+
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
+
 import { RootStackParamList } from "../navigation/types";
 import { signIn, signUp, resetPassword } from "../services/auth";
-import ThemeBackground from "../components/ThemeBackground";
+
 import { themeForCondition } from "../theme/weatherTheme";
+import ThemeBackground from "../components/ThemeBackground";
 
 const cloudsTheme = themeForCondition("Clouds");
 
@@ -195,7 +189,6 @@ export default function LoginScreen({ navigation }: Props) {
                     >
                         <Text style={styles.secondaryText}>Create account</Text>
                     </Pressable>
-
                 </View>
 
                 <Pressable disabled={submitting} onPress={onForgotPassword}>
@@ -234,9 +227,29 @@ const styles = StyleSheet.create({
     sunCore: { width: 28, height: 28, borderRadius: 14, backgroundColor: "#FBBF24" },
     title: { fontSize: 28, fontWeight: "900", color: "#111827" },
 
-    card: { backgroundColor: "rgba(245,249,255,0.85)", borderRadius: 18, paddingTop: 28, paddingHorizontal: 22, paddingBottom: 48, gap: 10, borderWidth: 1.5, borderColor: "rgba(186,216,255,0.6)", shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 12, elevation: 4 },
+    card: {
+        backgroundColor: "rgba(245,249,255,0.85)",
+        borderRadius: 18,
+        paddingTop: 28,
+        paddingHorizontal: 22,
+        paddingBottom: 48,
+        gap: 10,
+        borderWidth: 1.5,
+        borderColor: "rgba(186,216,255,0.6)",
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.08,
+        shadowRadius: 12,
+        elevation: 4,
+    },
     cardTitle: { fontSize: 18, fontWeight: "800", textAlign: "center" },
-    cardSubtitle: { fontSize: 12, color: "#6B7280", textAlign: "center", marginTop: -6, marginBottom: 26 },
+    cardSubtitle: {
+        fontSize: 12,
+        color: "#6B7280",
+        textAlign: "center",
+        marginTop: -6,
+        marginBottom: 26,
+    },
 
     input: {
         borderWidth: 1,

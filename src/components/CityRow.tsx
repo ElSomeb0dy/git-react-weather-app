@@ -4,7 +4,7 @@ import ReanimatedSwipeable, { SwipeableMethods } from "react-native-gesture-hand
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { CurrentWeather } from "../types/weather";
 import { tempColor } from "../utils/tempColor";
-import { formatTemp, weatherIconUrl } from "../utils/format";
+import { formatTemp, weatherIconUrl } from "../utils/display";
 import { useLocalTime } from "../hooks/useLocalTime";
 
 type Props = {

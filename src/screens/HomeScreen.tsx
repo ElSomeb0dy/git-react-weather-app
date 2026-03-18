@@ -1,71 +1,44 @@
 import React, { useEffect, useMemo, useState, useCallback } from "react";
-import ThemeBackground from "../components/ThemeBackground";
-import AddCityModal from "../components/AddCityModal";
+import { View, Text, Pressable, StyleSheet, FlatList, ScrollView, Image, ActivityIndicator, Alert, RefreshControl } from "react-native";
+
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useFocusEffect } from "@react-navigation/native";
-import { RootStackParamList } from "../navigation/types";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { fetchCurrentWeather, fetchCurrentWeatherByCoords } from "../services/openWeather";
-import { CurrentWeather, WeatherCondition } from "../types/weather";
-import { tempColor } from "../utils/tempColor";
-import { formatTemp } from "../utils/format";
-import { useLocalTime } from "../hooks/useLocalTime";
-import { useLocationWeather } from "../hooks/useLocationWeather";
-import { themeForCondition, isNightTime } from "../theme/weatherTheme";
-import CityRow from "../components/CityRow";
+
+import { RootStackParamList } from "../navigation/types";
+import { fetchWeatherForCities } from "../services/openWeather";
 import { getCities, deleteCity, CityEntry } from "../services/cities";
 import { loadSettings, HomeThemeMode } from "../storage/settings";
+
+import { CurrentWeather, WeatherCondition } from "../types/weather";
+import { tempColor } from "../utils/tempColor";
+import { formatTemp, getGreeting } from "../utils/display";
+
+import { useLocalTime } from "../hooks/useLocalTime";
+import { useLocationWeather } from "../hooks/useLocationWeather";
 import { useStatusMessage } from "../hooks/useStatusMessage";
-import {
-    View,
-    Text,
-    Pressable,
-    StyleSheet,
-    FlatList,
-    ScrollView,
-    Image,
-    ActivityIndicator,
-    Alert,
-    RefreshControl,
-} from "react-native";
+
+import { themeForCondition, isNightTime } from "../theme/weatherTheme";
+import ThemeBackground from "../components/ThemeBackground";
+import AddCityModal from "../components/AddCityModal";
+import CityRow from "../components/CityRow";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Home">;
 
-async function fetchWeatherForCities(cities: CityEntry[]): Promise<Record<string, CurrentWeather>> {
-    const results = await Promise.allSettled(
-        cities.map((c) =>
-            c.lat != null && c.lon != null
-                ? fetchCurrentWeatherByCoords(c.lat, c.lon)
-                : fetchCurrentWeather(c.city)
-        )
-    );
-    const entries: Array<[string, CurrentWeather]> = [];
-    results.forEach((result, i) => {
-        if (result.status === "fulfilled") entries.push([cities[i].city, result.value]);
-        else console.warn("Weather fetch failed for", cities[i].city, result.reason);
-    });
-    return Object.fromEntries(entries);
-}
-
-function getGreeting(): string {
-    const h = new Date().getHours();
-    if (h >= 5 && h < 12) return "Good Morning";
-    if (h >= 12 && h < 17) return "Good Afternoon";
-    if (h >= 17 && h < 21) return "Good Evening";
-    return "Good Night";
-}
-
 export default function HomeScreen({ navigation }: Props) {
     const insets = useSafeAreaInsets();
+
     const [cities, setCities] = useState<CityEntry[]>([]);
-    const [loading, setLoading] = useState(true);
     const [weatherMap, setWeatherMap] = useState<Record<string, CurrentWeather>>({});
+    const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
+
     const [unit, setUnit] = useState<"C" | "F">("C");
     const [homeTheme, setHomeTheme] = useState<HomeThemeMode>("top");
     const [fixedTheme, setFixedTheme] = useState("Clouds");
     const [showModal, setShowModal] = useState(false);
-    const [refreshing, setRefreshing] = useState(false);
+
     const { status, showError, showSuccess } = useStatusMessage();
 
     const { locationWeather, locationSlots } = useLocationWeather();
@@ -298,6 +271,7 @@ const styles = StyleSheet.create({
     },
     statusPillError: { backgroundColor: "rgba(220,38,38,0.12)" },
     statusPillSuccess: { backgroundColor: "rgba(22,163,74,0.12)" },
+
     statusText: { fontSize: 13, fontWeight: "700", textAlign: "center" },
     statusTextError: { color: "#DC2626" },
     statusTextSuccess: { color: "#16A34A" },
@@ -312,7 +286,13 @@ const styles = StyleSheet.create({
     },
     locationCity: { fontSize: 15, fontWeight: "600", marginBottom: 2, textAlign: "center" },
     locationTime: { fontSize: 12, fontWeight: "500", opacity: 0.7, marginBottom: 2, textAlign: "center" },
-    locationTemp: { fontSize: 60, fontWeight: "500", marginBottom: 2, textAlign: "center", letterSpacing: -2 },
+    locationTemp: {
+        fontSize: 60,
+        fontWeight: "500",
+        marginBottom: 2,
+        textAlign: "center",
+        letterSpacing: -2,
+    },
     locationFeelsLike: { fontSize: 13, opacity: 0.7, textAlign: "center" },
 
     greetingRow: {

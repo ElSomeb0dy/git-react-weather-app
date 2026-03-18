@@ -1,13 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, Pressable, ScrollView } from "react-native";
+
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
+
 import { RootStackParamList } from "../navigation/types";
 import { loadSettings, saveSettings, Settings, HomeThemeMode } from "../storage/settings";
 import { signOut } from "../services/auth";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
-import { themeForCondition } from "../theme/weatherTheme";
+
 import { WeatherCondition } from "../types/weather";
+
+import { themeForCondition } from "../theme/weatherTheme";
 import ThemeBackground from "../components/ThemeBackground";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Settings">;
@@ -168,29 +172,44 @@ const styles = StyleSheet.create({
 
     h1: { fontSize: 26, fontWeight: "900", marginBottom: 4 },
 
-    card: { borderRadius: 18, padding: 16, gap: 12, borderWidth: 1, borderColor: "rgba(128,128,128,0.25)" },
+    card: {
+        borderRadius: 18,
+        padding: 16,
+        gap: 12,
+        borderWidth: 1,
+        borderColor: "rgba(128,128,128,0.25)",
+    },
     sectionLabel: { fontSize: 11, fontWeight: "700", textTransform: "uppercase", letterSpacing: 0.8 },
 
-    // Unit toggle
     segmentRow: { flexDirection: "row", gap: 8 },
-    segment: { flex: 1, padding: 12, borderRadius: 12, alignItems: "center", backgroundColor: "rgba(0,0,0,0.06)" },
+    segment: {
+        flex: 1,
+        padding: 12,
+        borderRadius: 12,
+        alignItems: "center",
+        backgroundColor: "rgba(0,0,0,0.06)",
+    },
     segmentText: { fontWeight: "800", fontSize: 14 },
 
-    // Home theme radio
     radioRow: { flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 6 },
     radioCircle: { width: 20, height: 20, borderRadius: 10, borderWidth: 2 },
     radioText: { flex: 1 },
     radioLabel: { fontWeight: "800", fontSize: 14 },
     radioDesc: { fontSize: 12, marginTop: 1 },
 
-    // Fixed theme dots
     fixedPicker: { flexDirection: "row", justifyContent: "space-between", marginTop: 4 },
     dotItem: { alignItems: "center", gap: 5 },
-    dotRing: { width: 24, height: 24, borderRadius: 6, borderWidth: 2, alignItems: "center", justifyContent: "center" },
+    dotRing: {
+        width: 24,
+        height: 24,
+        borderRadius: 6,
+        borderWidth: 2,
+        alignItems: "center",
+        justifyContent: "center",
+    },
     dot: { width: 16, height: 16, borderRadius: 3 },
     dotLabel: { fontSize: 10, fontWeight: "700" },
 
-    // Logout
     logout: {
         flexDirection: "row",
         alignItems: "center",

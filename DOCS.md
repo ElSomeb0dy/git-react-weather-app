@@ -69,6 +69,7 @@ A React Native weather app built with Expo. Users log in, save cities, and view 
 ## Bug Fixes & Improvements
 
 | What was fixed | Details |
+| --- | --- |
 | Status bar overlap on iOS | Added `useSafeAreaInsets` with `paddingTop` on all screens |
 | Inconsistent city names | Always shows `weather.city, weather.country` from API response |
 | Night theme always active | `isNightTime` was comparing `Date.now()/1000` (seconds) against ms-stored timestamps — fixed |
@@ -112,6 +113,7 @@ npm run test:watch      # watch mode
 ### Test Suite
 
 | File | What it tests | Value |
+| --- | --- | --- |
 | `openWeather.test.ts` | API parsing, Kelvin conversion, error handling, city suggestion deduplication | High |
 | `useWeather.test.tsx` | Loading/error state management, city change refetch | High |
 | `LoginScreen.test.tsx` | Validation, login success/failure, signup, forgot password | High |
@@ -156,6 +158,6 @@ src/
 │   ├── useLocationWeather.ts    # GPS-based current location weather + hourly slots
 │   └── useWeatherInsight.ts     # Fetches AI insight, exposes { insight, loading }
 └── utils/
-    ├── format.ts                # formatTemp() — unit-aware temperature string
+    ├── display.ts               # formatTemp(), formatTime(), getGreeting(), weatherIconUrl()
     └── tempColor.ts             # Hex colour based on °C value
 ```
