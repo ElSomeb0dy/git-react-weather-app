@@ -2,6 +2,8 @@
 
 A cross-platform weather app built with React Native and Expo.
 
+![CI](https://github.com/ElSomeb0dy/git-react-weather-app/actions/workflows/ci.yml/badge.svg)
+
 ## Screenshots
 
 | Home                          | Weather Detail                           |
