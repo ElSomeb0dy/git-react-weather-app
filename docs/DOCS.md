@@ -5,6 +5,7 @@ A React Native weather app built with Expo. Users log in, save cities, and view 
 ## Features
 
 ### Authentication
+
 - Email and password login via Supabase
 - Account creation from the same screen
 - Forgot password button
@@ -14,6 +15,7 @@ A React Native weather app built with Expo. Users log in, save cities, and view 
 - Logout clears the session and resets navigation to Login
 
 ### Home Screen
+
 - Time-based greeting —> Good morning, afternoon..
 - Current location weather card (uses device GPS)
   - City, country, and local time for that timezone
@@ -30,6 +32,7 @@ A React Native weather app built with Expo. Users log in, save cities, and view 
 - Settings gear icon in the top-right corner
 
 ### Weather Detail Screen
+
 - Full-screen detail view for any saved city
 - Hero: city name, large temperature, description, local time
 - AI Insight card — short casual weather summary powered by Groq (llama-3.1-8b-instant), with 1-hour AsyncStorage cache; falls back to a local summary if no API key
@@ -40,6 +43,7 @@ A React Native weather app built with Expo. Users log in, save cities, and view 
 - Last updated timestamp
 
 ### Settings Screen
+
 - Toggle between Celsius and Fahrenheit — persisted across sessions
 - Home theme mode — choose what drives the app's colour theme:
   - **Current Location** — matches your GPS location's weather
@@ -50,6 +54,7 @@ A React Native weather app built with Expo. Users log in, save cities, and view 
 - Logout button
 
 ### UI & Theming
+
 - Weather-based colour themes — each condition has day and night variants
 - Night mode detected automatically from sunrise/sunset timestamps per city
 - Semi-transparent cards (glass effect via rgba) so the background gradient shows through
@@ -59,6 +64,7 @@ A React Native weather app built with Expo. Users log in, save cities, and view 
 - No native headers — fully custom layout on every screen
 
 ### API & Data
+
 - OpenWeatherMap API for current weather, forecast, and geocoding
 - Coordinate-based lookups (current location + autocomplete selection) prevent name-mismatch errors
 - City autocomplete via geocoding API, limited to 5 results, deduplicated
@@ -68,23 +74,22 @@ A React Native weather app built with Expo. Users log in, save cities, and view 
 
 ## Bug Fixes & Improvements
 
-| What was fixed | Details |
-| --- | --- |
-| Status bar overlap on iOS | Added `useSafeAreaInsets` with `paddingTop` on all screens |
-| Inconsistent city names | Always shows `weather.city, weather.country` from API response |
-| Night theme always active | `isNightTime` was comparing `Date.now()/1000` (seconds) against ms-stored timestamps — fixed |
-| Autocomplete "City not found" | Labels like "London, GB" failed the weather API; now uses lat/lon from suggestion |
-| Wrong city name displayed | `fetchCurrentWeatherByCoords` returned neighbourhood-level name (e.g. "City of Victoria" instead of "Hong Kong"); fixed by storing `suggestion.name` from geocoding and using it as the display name |
-| Gemini 429 rate limiting | Replaced Gemini with Groq API; added AsyncStorage cache (1-hour TTL) to prevent redundant calls |
-| White flash on WeatherDetail | Passes `background` colour as nav param, used in loading state |
-| Settings theme not live-updating | Now passes all four theme params (location + top, each with night flag) so Settings reacts immediately |
-| Android login crash | Fixed navigation reset after login on Android |
-| Unit change not reflected | Temperature unit reloads on focus via `useFocusEffect` |
-| Sequential city weather fetches | Changed `for` loop to `Promise.allSettled` — all cities fetch in parallel |
-| Duplicate city suggestions | Deduplicated by label and coordinates |
-| Settings loaded twice on mount | Removed redundant `useEffect`, kept only `useFocusEffect` |
-| Duplicate API response parsing | Extracted shared `parseWeatherData()` helper in `openWeather.ts` |
-
+| What was fixed                   | Details                                                                                                                                                                                              |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Status bar overlap on iOS        | Added `useSafeAreaInsets` with `paddingTop` on all screens                                                                                                                                           |
+| Inconsistent city names          | Always shows `weather.city, weather.country` from API response                                                                                                                                       |
+| Night theme always active        | `isNightTime` was comparing `Date.now()/1000` (seconds) against ms-stored timestamps — fixed                                                                                                         |
+| Autocomplete "City not found"    | Labels like "London, GB" failed the weather API; now uses lat/lon from suggestion                                                                                                                    |
+| Wrong city name displayed        | `fetchCurrentWeatherByCoords` returned neighbourhood-level name (e.g. "City of Victoria" instead of "Hong Kong"); fixed by storing `suggestion.name` from geocoding and using it as the display name |
+| Gemini 429 rate limiting         | Replaced Gemini with Groq API; added AsyncStorage cache (1-hour TTL) to prevent redundant calls                                                                                                      |
+| White flash on WeatherDetail     | Passes `background` colour as nav param, used in loading state                                                                                                                                       |
+| Settings theme not live-updating | Now passes all four theme params (location + top, each with night flag) so Settings reacts immediately                                                                                               |
+| Android login crash              | Fixed navigation reset after login on Android                                                                                                                                                        |
+| Unit change not reflected        | Temperature unit reloads on focus via `useFocusEffect`                                                                                                                                               |
+| Sequential city weather fetches  | Changed `for` loop to `Promise.allSettled` — all cities fetch in parallel                                                                                                                            |
+| Duplicate city suggestions       | Deduplicated by label and coordinates                                                                                                                                                                |
+| Settings loaded twice on mount   | Removed redundant `useEffect`, kept only `useFocusEffect`                                                                                                                                            |
+| Duplicate API response parsing   | Extracted shared `parseWeatherData()` helper in `openWeather.ts`                                                                                                                                     |
 
 ## Environment Variables
 
@@ -99,10 +104,10 @@ GROQ_API_KEY=your_groq_key_here   # optional — AI insight falls back to local 
 
 These are loaded via `expo-constants` and accessed as `Constants.expoConfig.extra.*`.
 
-
 ## Test Coverage
 
 Tests live in `__tests__/`. Run with:
+
 ```
 npm test                # run all tests
 npm run test:coverage   # run with coverage report
@@ -112,17 +117,16 @@ npm run test:watch      # watch mode
 
 ### Test Suite
 
-| File | What it tests | Value |
-| --- | --- | --- |
-| `openWeather.test.ts` | API parsing, Kelvin conversion, error handling, city suggestion deduplication | High |
-| `useWeather.test.tsx` | Loading/error state management, city change refetch | High |
-| `LoginScreen.test.tsx` | Validation, login success/failure, signup, forgot password | High |
-| `CityRow.test.tsx` | City display, unit switching, open/remove callbacks | High |
-| `tempColor.test.ts` | All 6 temperature boundary conditions | High |
-| `settings.test.ts` | Defaults, stored values, corrupt JSON recovery | High |
-| `storage.test.ts` | City list, auth session, secure storage (native path) | High |
-| `weatherTheme.test.ts` | Required fields on all themes, fallback behaviour | Medium |
-
+| File                   | What it tests                                                                 | Value  |
+| ---------------------- | ----------------------------------------------------------------------------- | ------ |
+| `openWeather.test.ts`  | API parsing, Kelvin conversion, error handling, city suggestion deduplication | High   |
+| `useWeather.test.tsx`  | Loading/error state management, city change refetch                           | High   |
+| `LoginScreen.test.tsx` | Validation, login success/failure, signup, forgot password                    | High   |
+| `CityRow.test.tsx`     | City display, unit switching, open/remove callbacks                           | High   |
+| `tempColor.test.ts`    | All 6 temperature boundary conditions                                         | High   |
+| `settings.test.ts`     | Defaults, stored values, corrupt JSON recovery                                | High   |
+| `storage.test.ts`      | City list, auth session, secure storage (native path)                         | High   |
+| `weatherTheme.test.ts` | Required fields on all themes, fallback behaviour                             | Medium |
 
 ## Code Structure
 

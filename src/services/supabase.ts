@@ -12,16 +12,16 @@ const supabaseAnonKey = extra.SUPABASE_ANON_KEY as string;
 
 // Minimal storage adapter Supabase expects
 const ExpoStorage = {
-    getItem: (key: string) => secureGet(key),
-    setItem: (key: string, value: string) => secureSet(key, value),
-    removeItem: (key: string) => secureDelete(key),
+  getItem: (key: string) => secureGet(key),
+  setItem: (key: string, value: string) => secureSet(key, value),
+  removeItem: (key: string) => secureDelete(key),
 };
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-    auth: {
-        storage: ExpoStorage,
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: Platform.OS === "web", 
-    },
+  auth: {
+    storage: ExpoStorage,
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: Platform.OS === "web",
+  },
 });

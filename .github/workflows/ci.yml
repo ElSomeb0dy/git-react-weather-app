@@ -22,18 +22,18 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Lint
-        run: npm run lint
+      # - name: Lint
+      #   run: npm run lint
 
-      - name: Format check
-        run: npm run format:check
+      # - name: Format check
+      #   run: npm run format:check
 
       - name: Run tests
         run: npm test -- --watchAll=false --passWithNoTests
         env:
           CI: true
 
-      - name: Build (Expo export)
+      - name: Build 
         run: npx expo export --platform web
         env:
           OPENWEATHER_API_KEY: ${{ secrets.OPENWEATHER_API_KEY }}

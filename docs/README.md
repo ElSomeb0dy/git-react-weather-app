@@ -4,18 +4,18 @@ A cross-platform weather app built with React Native and Expo.
 
 ## Screenshots
 
-| Home | Weather Detail |
-|---|---|
+| Home                          | Weather Detail                           |
+| ----------------------------- | ---------------------------------------- |
 | ![Home](assets/demo/home.png) | ![Detail](assets/demo/weatherdetail.png) |
 
 ## Stack
 
-| Layer | Technology |
-|---|---|
-| Framework | React Native + Expo (TypeScript) |
-| Auth & DB | Supabase |
-| Weather Data | OpenWeatherMap API |
-| AI Insights | Groq API (llama-3.1-8b-instant) |
+| Layer        | Technology                       |
+| ------------ | -------------------------------- |
+| Framework    | React Native + Expo (TypeScript) |
+| Auth & DB    | Supabase                         |
+| Weather Data | OpenWeatherMap API               |
+| AI Insights  | Groq API (llama-3.1-8b-instant)  |
 
 ## Highlights
 
@@ -43,13 +43,13 @@ A cross-platform weather app built with React Native and Expo.
 
 In your Supabase project, create a `user_cities` table:
 
-| Column | Type | Notes |
-|---|---|---|
-| `id` | int8 | primary key |
-| `user_id` | uuid | references `auth.users` |
-| `city` | text | |
-| `lat` | float8 | nullable |
-| `lon` | float8 | nullable |
+| Column    | Type   | Notes                   |
+| --------- | ------ | ----------------------- |
+| `id`      | int8   | primary key             |
+| `user_id` | uuid   | references `auth.users` |
+| `city`    | text   |                         |
+| `lat`     | float8 | nullable                |
+| `lon`     | float8 | nullable                |
 
 Enable Row Level Security and add a policy so users can only access their own rows.
 
