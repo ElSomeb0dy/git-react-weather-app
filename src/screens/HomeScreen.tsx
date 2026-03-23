@@ -31,6 +31,7 @@ import { useLocationWeather } from "../hooks/useLocationWeather";
 import { useStatusMessage } from "../hooks/useStatusMessage";
 
 import { themeForCondition, isNightTime } from "../theme/weatherTheme";
+import { commonStyles } from "../styles/common";
 import ThemeBackground from "../components/ThemeBackground";
 import AddCityModal from "../components/AddCityModal";
 import CityRow from "../components/CityRow";
@@ -132,7 +133,7 @@ export default function HomeScreen({ navigation }: Props) {
 
   if (loading) {
     return (
-      <View style={[styles.center, { backgroundColor: "#fff" }]}>
+      <View style={[commonStyles.center, { backgroundColor: "#fff" }]}>
         <ActivityIndicator />
       </View>
     );
@@ -168,14 +169,15 @@ export default function HomeScreen({ navigation }: Props) {
       {status && (
         <View
           style={[
-            styles.statusPill,
-            status.type === "error" ? styles.statusPillError : styles.statusPillSuccess,
+            commonStyles.statusPill,
+            { marginBottom: 6 },
+            status.type === "error" ? commonStyles.statusPillError : commonStyles.statusPillSuccess,
           ]}
         >
           <Text
             style={[
-              styles.statusText,
-              status.type === "error" ? styles.statusTextError : styles.statusTextSuccess,
+              commonStyles.statusText,
+              status.type === "error" ? commonStyles.statusTextError : commonStyles.statusTextSuccess,
             ]}
           >
             {status.text}
@@ -294,7 +296,6 @@ export default function HomeScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  center: { flex: 1, alignItems: "center", justifyContent: "center" },
   container: { flex: 1, paddingHorizontal: 16, paddingBottom: 16 },
 
   rowBetween: {
@@ -307,21 +308,6 @@ const styles = StyleSheet.create({
 
   h2: { fontSize: 16, fontWeight: "800" },
   link: { fontWeight: "800" },
-
-  statusPill: {
-    alignSelf: "center",
-    marginTop: 10,
-    marginBottom: 6,
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 999,
-  },
-  statusPillError: { backgroundColor: "rgba(220,38,38,0.12)" },
-  statusPillSuccess: { backgroundColor: "rgba(22,163,74,0.12)" },
-
-  statusText: { fontSize: 13, fontWeight: "700", textAlign: "center" },
-  statusTextError: { color: "#DC2626" },
-  statusTextSuccess: { color: "#16A34A" },
 
   locationCard: {
     borderRadius: 16,

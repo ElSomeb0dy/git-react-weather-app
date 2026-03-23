@@ -12,6 +12,7 @@ import { signOut } from "../services/auth";
 import { WeatherCondition } from "../types/weather";
 
 import { themeForCondition } from "../theme/weatherTheme";
+import { commonStyles } from "../styles/common";
 import ThemeBackground from "../components/ThemeBackground";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Settings">;
@@ -80,7 +81,7 @@ export default function SettingsScreen({ route, navigation }: Props) {
       <Pressable
         onPress={() => navigation.goBack()}
         hitSlop={8}
-        style={[styles.backBtn, { top: insets.top + 12 }]}
+        style={[commonStyles.backBtn, { top: insets.top + 12 }]}
       >
         <Ionicons name="chevron-back" size={26} color={theme.text} />
       </Pressable>
@@ -93,8 +94,8 @@ export default function SettingsScreen({ route, navigation }: Props) {
         <Text style={[styles.h1, { color: theme.text }]}>Settings</Text>
 
         {/* Temperature unit */}
-        <View style={[styles.card, { backgroundColor: theme.card }]}>
-          <Text style={[styles.sectionLabel, { color: theme.subtleText }]}>Temperature Unit</Text>
+        <View style={[commonStyles.card, { backgroundColor: theme.card, gap: 12 }]}>
+          <Text style={[commonStyles.cardLabel, { color: theme.subtleText }]}>Temperature Unit</Text>
           <View style={styles.segmentRow}>
             {(["C", "F"] as const).map((u) => (
               <Pressable
@@ -113,8 +114,8 @@ export default function SettingsScreen({ route, navigation }: Props) {
         </View>
 
         {/* Home theme picker */}
-        <View style={[styles.card, { backgroundColor: theme.card }]}>
-          <Text style={[styles.sectionLabel, { color: theme.subtleText }]}>Home Page Theme</Text>
+        <View style={[commonStyles.card, { backgroundColor: theme.card, gap: 12 }]}>
+          <Text style={[commonStyles.cardLabel, { color: theme.subtleText }]}>Home Page Theme</Text>
 
           {HOME_THEME_OPTIONS.map((opt) => (
             <Pressable
@@ -174,20 +175,10 @@ export default function SettingsScreen({ route, navigation }: Props) {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  backBtn: { position: "absolute", left: 12, zIndex: 10, padding: 4 },
   scroll: { flex: 1 },
   content: { padding: 16, gap: 14, paddingBottom: 40 },
 
   h1: { fontSize: 26, fontWeight: "900", marginBottom: 4 },
-
-  card: {
-    borderRadius: 18,
-    padding: 16,
-    gap: 12,
-    borderWidth: 1,
-    borderColor: "rgba(128,128,128,0.25)",
-  },
-  sectionLabel: { fontSize: 11, fontWeight: "700", textTransform: "uppercase", letterSpacing: 0.8 },
 
   segmentRow: { flexDirection: "row", gap: 8 },
   segment: {

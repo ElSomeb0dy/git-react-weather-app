@@ -30,6 +30,7 @@ import { useLocalTime } from "../hooks/useLocalTime";
 import { useWeatherInsight } from "../hooks/useWeatherInsight";
 
 import { themeForCondition, isNightTime } from "../theme/weatherTheme";
+import { commonStyles } from "../styles/common";
 import ThemeBackground from "../components/ThemeBackground";
 
 type Props = NativeStackScreenProps<RootStackParamList, "WeatherDetail">;
@@ -88,7 +89,7 @@ export default function WeatherDetailScreen({ route, navigation }: Props) {
     const isDark = route.params.background != null;
     const subtleCol = isDark ? "rgba(255,255,255,0.5)" : "#6B7280";
     return (
-      <View style={[styles.center, { backgroundColor: bg }]}>
+      <View style={[commonStyles.center, { backgroundColor: bg }]}>
         <ActivityIndicator color={isDark ? "#fff" : "#000"} />
         <Text style={[styles.loadingLabel, { color: subtleCol }]}>Fetching data…</Text>
       </View>
@@ -97,7 +98,7 @@ export default function WeatherDetailScreen({ route, navigation }: Props) {
 
   if (!weather) {
     return (
-      <View style={[styles.center, { padding: 16 }]}>
+      <View style={[commonStyles.center, { padding: 16 }]}>
         <Text>Failed to load weather.</Text>
         <Pressable style={styles.retryBtn} onPress={loadWeather}>
           <Text style={styles.retryText}>Retry</Text>
@@ -129,7 +130,7 @@ export default function WeatherDetailScreen({ route, navigation }: Props) {
       <ThemeBackground theme={theme} />
 
       <Pressable
-        style={[styles.backBtn, { top: insets.top + 12 }]}
+        style={[commonStyles.backBtn, { top: insets.top + 12 }]}
         onPress={() => navigation.goBack()}
         hitSlop={8}
       >
@@ -154,9 +155,9 @@ export default function WeatherDetailScreen({ route, navigation }: Props) {
 
         {/* AI insight card */}
         {(insight || insightLoading) && (
-          <View style={[styles.card, { backgroundColor: theme.card }]}>
+          <View style={[commonStyles.card, { backgroundColor: theme.card }]}>
             <View style={styles.insightHeader}>
-              <Text style={[styles.cardLabel, { color: theme.subtleText }]}>AI Insight</Text>
+              <Text style={[commonStyles.cardLabel, { marginBottom: 12, color: theme.subtleText }]}>AI Insight</Text>
               {insight && (
                 <Text style={[styles.insightBadge, { color: theme.subtleText }]}>
                   {insight.source === "ai" ? "Groq" : "local"}
@@ -176,8 +177,8 @@ export default function WeatherDetailScreen({ route, navigation }: Props) {
         )}
 
         {/* Stats card */}
-        <View style={[styles.card, { backgroundColor: theme.card }]}>
-          <Text style={[styles.cardLabel, { color: theme.subtleText }]}>Details</Text>
+        <View style={[commonStyles.card, { backgroundColor: theme.card }]}>
+          <Text style={[commonStyles.cardLabel, { marginBottom: 12, color: theme.subtleText }]}>Details</Text>
           <View style={styles.statsGrid}>
             {STATS.map((s) => (
               <View key={s.label} style={styles.statItem}>
@@ -190,8 +191,8 @@ export default function WeatherDetailScreen({ route, navigation }: Props) {
 
         {/* Forecast card */}
         {forecast.length > 0 && (
-          <View style={[styles.card, { backgroundColor: theme.card }]}>
-            <Text style={[styles.cardLabel, { color: theme.subtleText }]}>5-Day Forecast</Text>
+          <View style={[commonStyles.card, { backgroundColor: theme.card }]}>
+            <Text style={[commonStyles.cardLabel, { marginBottom: 12, color: theme.subtleText }]}>5-Day Forecast</Text>
             {forecast.map((day, i) => {
               const dayName = DAY_NAMES[new Date(day.date).getDay()];
               const dateStr = new Date(day.date).toLocaleDateString([], {
@@ -243,9 +244,7 @@ export default function WeatherDetailScreen({ route, navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  center: { flex: 1, alignItems: "center", justifyContent: "center" },
   container: { flex: 1 },
-  backBtn: { position: "absolute", left: 12, zIndex: 10, padding: 4 },
 
   retryBtn: { marginTop: 12, backgroundColor: "#111827", padding: 12, borderRadius: 12 },
   retryText: { color: "white", fontWeight: "800" },
@@ -257,20 +256,6 @@ const styles = StyleSheet.create({
   heroTemp: { fontSize: 72, fontWeight: "500", marginTop: 4, letterSpacing: -2 },
   heroDesc: { fontSize: 16, fontWeight: "500", textTransform: "capitalize" },
   heroTime: { fontSize: 13, fontWeight: "500", marginTop: 4, opacity: 0.7 },
-
-  card: {
-    borderRadius: 18,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: "rgba(128,128,128,0.25)",
-  },
-  cardLabel: {
-    fontSize: 11,
-    fontWeight: "700",
-    textTransform: "uppercase",
-    letterSpacing: 0.8,
-    marginBottom: 12,
-  },
 
   forecastRow: { flexDirection: "row", alignItems: "center", paddingVertical: 10 },
   dayCol: { width: 52 },

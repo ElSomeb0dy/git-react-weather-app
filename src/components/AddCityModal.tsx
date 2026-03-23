@@ -15,6 +15,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { fetchCitySuggestions, CitySuggestion } from "../services/openWeather";
 import { insertCity } from "../services/cities";
 import { Theme } from "../theme/weatherTheme";
+import { commonStyles } from "../styles/common";
 
 interface Props {
   visible: boolean;
@@ -131,14 +132,14 @@ export default function AddCityModal({ visible, cities, theme, onClose, onCityAd
           {status && (
             <View
               style={[
-                styles.statusPill,
-                status.type === "error" ? styles.statusPillError : styles.statusPillSuccess,
+                commonStyles.statusPill,
+                status.type === "error" ? commonStyles.statusPillError : commonStyles.statusPillSuccess,
               ]}
             >
               <Text
                 style={[
-                  styles.statusText,
-                  status.type === "error" ? styles.statusTextError : styles.statusTextSuccess,
+                  commonStyles.statusText,
+                  status.type === "error" ? commonStyles.statusTextError : commonStyles.statusTextSuccess,
                 ]}
               >
                 {status.text}
@@ -225,19 +226,6 @@ const styles = StyleSheet.create({
   },
   header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   title: { fontSize: 18, fontWeight: "800", marginBottom: 4 },
-
-  statusPill: {
-    alignSelf: "center",
-    marginTop: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 999,
-  },
-  statusPillError: { backgroundColor: "rgba(220,38,38,0.12)" },
-  statusPillSuccess: { backgroundColor: "rgba(22,163,74,0.12)" },
-  statusText: { fontSize: 13, fontWeight: "700", textAlign: "center" },
-  statusTextError: { color: "#DC2626" },
-  statusTextSuccess: { color: "#16A34A" },
 
   row: { flexDirection: "row", gap: 10 },
   input: { flex: 1, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 12 },
